@@ -1,0 +1,10 @@
+.DS_Store
+.claude/
+listing/
+build/*.blend[0-9]
+build/*.log
+build/*.blend1
+data/pull.log
+data/pull*.out
+data/bus_est.json
+data/atr.json

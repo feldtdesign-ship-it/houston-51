@@ -1,0 +1,45 @@
+/* ---- Long Room: what differs from the 527 family ---- */
+/* type: Bricolage's width axis pulled narrow for the numerals and heads (the room is 68 ft long and 10 ft wide); Figtree text; DM Mono data */
+h1{font-variation-settings:"opsz" var(--opsz),"wdth" 76,"wght" var(--w);font-size:clamp(84px,14vw,210px)}
+h1 em{font-weight:200;font-family:var(--disp)}
+h2{font-variation-settings:"opsz" var(--opsz),"wdth" 84,"wght" 600}
+.big,.hero .bigN{font-variation-settings:"opsz" var(--opsz),"wdth" 78,"wght" 760}
+#num{font-variation-settings:"opsz" var(--opsz),"wdth" 75,"wght" 800}
+.big.six{color:var(--six)}
+.scrollhint{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.small{font-size:13px;color:var(--muted);margin:10px 0 0}
+/* the world goes white when the room is peeled back: variables flip, so every card, rule and caption follows */
+body.lite-on{--ink:#141210;--ink-2:#4A463F;--muted:#8A857C;--rule:#D9D5CC;--sc:243,241,236;--cardbg:rgba(255,255,255,.84)}
+body.lite-on #num{mix-blend-mode:multiply}
+body.lite-on #num.on{opacity:.09}
+body.lite-on #mast .sig img{filter:invert(1)}
+body.lite-on #bar{background:#141210}
+body.lite-on #scrim{transition:none}
+.card.slim{background:var(--cardbg);backdrop-filter:blur(3px)}
+.card.slim p{font-size:16px}
+.card.six{border-top-color:var(--six)}
+#mast{align-items:center}
+#mast .sig{pointer-events:auto;display:block}
+#mast .sig img{height:30px;width:auto;display:block}
+#mast .addr{flex:1;padding-left:22px}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:14px 0 6px}
+.photos img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;background:#222}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px}
+.strip img{width:100%;aspect-ratio:11/14;object-fit:cover;border:1px solid var(--ink);background:#fff;display:block}
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+.gal img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;border:1px solid var(--rule)}
+.gal figcaption{margin-top:8px;font-size:11px;line-height:1.5}
+/* pins on the corner section */
+#pins{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;overflow:hidden}
+.pin{position:absolute;left:0;top:0;will-change:transform;white-space:nowrap}
+.pin i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;background:var(--ink);border-radius:50%}
+.pin.hot i{background:var(--f);box-shadow:0 0 0 4px rgba(255,99,25,.25)}
+.pin span{position:absolute;left:10px;top:-9px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-shadow:0 0 6px var(--paper),0 0 2px var(--paper)}
+.pin span em{font-style:normal;color:var(--muted);margin-left:8px}
+.pin.hot span{color:var(--f)}
+/* the street clock */
+#meter{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+#meter .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+@media (max-width:760px){.photos{grid-template-columns:repeat(2,1fr)}.strip{grid-template-columns:repeat(4,1fr)}#mast .addr{display:none}.pin span{font-size:9px}}
+
+.doors .v #d-a,.doors .v #d-c{font-family:var(--disp);font-weight:800;font-size:64px;color:inherit;line-height:1;font-variation-settings:"opsz" 60,"wdth" 80,"wght" 780;margin-right:6px}
