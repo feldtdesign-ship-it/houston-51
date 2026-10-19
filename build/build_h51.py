@@ -420,10 +420,12 @@ def stage_room():
     lw, lh = 3.1, 1.75                                                                                       # the back wall: a 3 by 2 video wall of 43 inch landscape panels
     for r in range(2):
         for c in range(3): monitor_front("B%d" % (r * 3 + c + 1), 9.5 + (c - 1) * (lw + 0.05), DEPTH - 0.16, 4.2 + (1 - r) * (lh + 0.05), lw, lh)
-    for i, y in enumerate((9.0, 20.5, 33.0)):                                                                # three double-sided panels hung from the ceiling down the corridor
+    for i, y in enumerate((13.0, 24.0, 35.0)):                                                                # three double-sided panels hung from the ceiling down the corridor
         xc = 6.5; zc = 8.0; pipe("FIT_HANG_POLE_%d" % i, (xc, y, zc + lh / 2), (xc, y, CEIL), pipe_m, r=0.05)
         box("FIT_HANG_BODY_%d" % i, xc - lw/2 - 0.06, xc + lw/2 + 0.06, y - 0.07, y + 0.07, zc - lh/2 - 0.06, zc + lh/2 + 0.06, frm)
         quad("MON_SCR_H%da" % (i + 1), xc - lw/2, xc + lw/2, zc - lh/2, zc + lh/2, y - 0.08, -1, scr); quad("MON_SCR_H%db" % (i + 1), xc - lw/2, xc + lw/2, zc - lh/2, zc + lh/2, y + 0.08, +1, scr)
+    yel = mat_flat("fit_yellow", "#F6C500", 0.5); box("FIT_STRIP", X0, X0 + 1.0, 0.4, 66.4, 0.06, 0.12, yel)                          # the ADA tactile strip, PJ yellow, the platform edge indoors (115 Avenue A)
+    box("FIT_BLACKWALL", X0, XR, DEPTH - 0.03, DEPTH, 0.06, CEIL, mat_flat("fit_black", "#0c0c0c", 0.5))                              # black paint behind the video wall
     return "room: hexes %d, tees %d, screens %d" % (n1, nt, len([o for o in bpy.data.objects if o.name.startswith("MON_SCR_")]))
 
 def export_glb(filename="houston_51.glb"):

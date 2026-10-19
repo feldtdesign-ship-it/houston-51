@@ -275,7 +275,7 @@ body.lite-on #scrim{transition:none}
 <section id="s5" data-cap="The walls / nine prints in black 16 x 20 frames on the east wall, one level row / PJ's line drawings" data-num="9" data-numc="f">
 <div class="wrap"><div class="card lite"><div class="eyebrow">The walls</div>
 <h2>Nine prints, <em>one level row</em></h2>
-<p>His line drawings in black 16 by 20 frames, hung at one height down the east wall. A white wall behind them. A room you walk down like a gallery.</p>
+<p>His line drawings in black 16 by 20 frames, hung at one height down the east wall. A white wall behind them, and the yellow tactile strip, the edge of a subway platform, down the floor below. A room you walk down like a gallery.</p>
 <div class="strip"><img src="assets/art/art_01.jpg" alt="" loading="lazy"><img src="assets/art/art_02.jpg" alt="" loading="lazy"><img src="assets/art/art_03.jpg" alt="" loading="lazy"><img src="assets/art/art_04.jpg" alt="" loading="lazy"><img src="assets/art/art_05.jpg" alt="" loading="lazy"><img src="assets/art/art_06.jpg" alt="" loading="lazy"><img src="assets/art/art_07.jpg" alt="" loading="lazy"></div>
 </div></div></section>
 
@@ -289,7 +289,7 @@ body.lite-on #scrim{transition:none}
 <div class="wrap"><div class="card"><div class="eyebrow">The screens</div>
 <div class="big f">15<small>screens, all PJ's animations</small></div>
 <h2>Lights down, <em>screens up</em></h2>
-<p>A video wall of six at the back that changes what it shows every fourteen seconds: one picture across all six, then six pictures, then prints. Three double-sided screens hang on poles down the corridor. Three more face East Houston from the window. Gumbit, Pizza Rat, Suit Guy, the Murder Hornets loop and the New York loop.</p>
+<p>A video wall of six at the back that changes what it shows every fourteen seconds: one picture across all six, then six pictures, then prints. Three double-sided screens hang on poles down the corridor. Three more face East Houston from the window. Gumbit, Pizza Rat, Suit Guy, the Murder Hornets loop and the New York loop. The back wall behind them is painted black.</p>
 <dl class="rows">
 <div class="row"><dt>Back wall</dt><dd>6 × 43 in panels, 3 across, 2 high</dd></div>
 <div class="row"><dt>Corridor</dt><dd>3 poles, a panel facing each way</dd></div>
@@ -558,6 +558,7 @@ if(renderer){
    else if(N.startsWith('EX_')){o.userData.y0=o.position.y;groups.ex.push(o);o.receiveShadow=true;if(m){m.transparent=true;groups.exMats.add(m);const c0=m.color.clone();m.emissive=c0.clone();m.emissiveIntensity=.38;}
      if(/^EX_(TILEWALL_E|TILEHEX_E|ROSETTE)/.test(N)) near('E'); else if(/^EX_(TILEWALL_W|TILEHEX_W|STEEL|TIMBER)/.test(N)) near('W');}
    else if(N.startsWith('FIT_')){groups.fit.push(o);o.castShadow=true;if(m){m.transparent=true;groups.fitMats.add(m);
+       if(N==='FIT_STRIP'){m.emissive=col(0xF6C500);m.emissiveIntensity=.55;}
        if(N.startsWith('FIT_GAL_PRINT')){m.emissive=col(0xFFFFFF);m.emissiveIntensity=.35;m.emissiveMap=m.map||null;}
        else if(N.startsWith('FIT_FOLD')||N.startsWith('FIT_TEE')){m.emissive=m.color.clone();m.emissiveIntensity=.45;}
        else if(N.startsWith('FIT_TBL_TOP')||N.startsWith('FIT_UNIT_PLANK')){m.emissive=m.color.clone();m.emissiveIntensity=.35;}

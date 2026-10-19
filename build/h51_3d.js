@@ -61,6 +61,7 @@ if(renderer){
    else if(N.startsWith('EX_')){o.userData.y0=o.position.y;groups.ex.push(o);o.receiveShadow=true;if(m){m.transparent=true;groups.exMats.add(m);const c0=m.color.clone();m.emissive=c0.clone();m.emissiveIntensity=.38;}
      if(/^EX_(TILEWALL_E|TILEHEX_E|ROSETTE)/.test(N)) near('E'); else if(/^EX_(TILEWALL_W|TILEHEX_W|STEEL|TIMBER)/.test(N)) near('W');}
    else if(N.startsWith('FIT_')){groups.fit.push(o);o.castShadow=true;if(m){m.transparent=true;groups.fitMats.add(m);
+       if(N==='FIT_STRIP'){m.emissive=col(0xF6C500);m.emissiveIntensity=.55;}
        if(N.startsWith('FIT_GAL_PRINT')){m.emissive=col(0xFFFFFF);m.emissiveIntensity=.35;m.emissiveMap=m.map||null;}
        else if(N.startsWith('FIT_FOLD')||N.startsWith('FIT_TEE')){m.emissive=m.color.clone();m.emissiveIntensity=.45;}
        else if(N.startsWith('FIT_TBL_TOP')||N.startsWith('FIT_UNIT_PLANK')){m.emissive=m.color.clone();m.emissiveIntensity=.35;}
