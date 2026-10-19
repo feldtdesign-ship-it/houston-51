@@ -108,7 +108,7 @@ S.append('''<section class="slide dark">
   <div class="strip bottom"></div>
 </section>''')
 S.append('''<section class="slide light">
-  <img src="img/H51_hero_7_tables.jpg" style="position:absolute;left:0;top:0;width:1920px;height:600px;object-fit:cover;object-position:50% 45%" alt="">
+  <img src="img/H51_hero_8_street.jpg" style="position:absolute;left:0;top:0;width:1920px;height:600px;object-fit:cover;object-position:50% 62%" alt="">
   <div class="label" style="position:absolute;left:80px;top:48px;color:#f6f5f2">08 · The corner</div>
   <div style="position:absolute;left:80px;right:80px;top:650px;display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:56px;align-items:start">
     <div class="h-cond" style="font-size:104px">Crossroads of Nolita, NoHo and the LES.</div>

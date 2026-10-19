@@ -179,7 +179,7 @@ def _box(bm, x0, x1, y0, y1, z0, z1):
     x0, x1 = min(x0, x1), max(x0, x1); y0, y1 = min(y0, y1), max(y0, y1); z0, z1 = min(z0, z1), max(z0, z1)
     vs = [bm.verts.new(p) for p in ((x0,y0,z0),(x1,y0,z0),(x1,y1,z0),(x0,y1,z0),(x0,y0,z1),(x1,y0,z1),(x1,y1,z1),(x0,y1,z1))]
     for f in ((0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)): bm.faces.new([vs[i] for i in f])
-def _front(bbl):
+def _front(bbl, near=None):
     """(east corner, west corner) in lon/lat of the Houston edge of a lot: the edge whose midpoint lies furthest toward the street (north-north-east)."""
     for f in load("footprints"):
         if f["properties"].get("base_bbl") != bbl: continue
@@ -188,6 +188,7 @@ def _front(bbl):
             (p, pl), (q, ql) = pts[i], pts[i + 1]
             if math.dist(p, q) < 6.0: continue
             mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2); score = mid[0] * N_VEC[0] + mid[1] * N_VEC[1]
+            if near is not None: score = -math.dist(mid, near)                           # the segment of an L-shaped neighbour that touches 51
             if best is None or score > best[0]: best = (score, pl, ql, p, q)
         _, pl, ql, p, q = best
         return (pl, ql) if (p[0] * E_VEC[0] + p[1] * E_VEC[1]) > (q[0] * E_VEC[0] + q[1] * E_VEC[1]) else (ql, pl)
@@ -205,9 +206,11 @@ def _face(name, a_ll, b_ll, draw, side=-1, prefix="B51_"):
         if not bm.faces: bm.free(); continue
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces); me = bpy.data.meshes.new(prefix + name + "_" + mat[3:]); bm.to_mesh(me); bm.free()
         ob = bpy.data.objects.new(prefix + name + "_" + mat[3:], me); col().objects.link(ob); ob.parent = root; ob.data.materials.append(bpy.data.materials[mat])
-    for i, c in enumerate(cuts):
-        cb = bmesh.new(); _box(cb, *c); me = bpy.data.meshes.new("CUT"); cb.to_mesh(me); cb.free()
-        co = bpy.data.objects.new(prefix + "CUT_%s_%d" % (name, i), me); col().objects.link(co); co.parent = root; co.hide_render = True; co.display_type = 'WIRE'
+    if cuts:      # every cut box of a face goes into one cutter, so the wall is cut once
+        cb = bmesh.new()
+        for c in cuts: _box(cb, *c)
+        me = bpy.data.meshes.new("CUT"); cb.to_mesh(me); cb.free()
+        co = bpy.data.objects.new(prefix + "CUT_%s_0" % name, me); col().objects.link(co); co.parent = root; co.hide_render = True; co.display_type = 'WIRE'
     return root, L
 def _win(B, x0, x1, z0, z1, panes=1, d=0.0, glass="PJ_GLASS", frame="PJ_IRON", f=0.25):
     B(glass, x0, x1, d + 0.00, d + 0.04, z0, z1)
@@ -218,7 +221,8 @@ def _uppers(B, L, gf, roof, nfl, bays, w=3.3, h=5.4, sill=2.7, cornice="PJ_TRIM"
     for fl in range(nfl - 1):
         z = gf + fl * fh
         for cx in bays:
-            _win(B, cx - w / 2, cx + w / 2, z + sill * FT, z + (sill + h) * FT, panes=2, d=-0.12, glass="PJ_GLASS")
+            B.cut(cx - w / 2, cx + w / 2, -0.32, 0.05, z + sill * FT, z + (sill + h) * FT)                         # the opening, cut into the wall
+            _win(B, cx - w / 2, cx + w / 2, z + sill * FT, z + (sill + h) * FT, panes=2, d=-0.22, glass="PJ_GLASS")
             B("PJ_TRIM", cx - w / 2 - 0.3, cx + w / 2 + 0.3, -0.12, 0.06, z + sill * FT - 0.08, z + sill * FT)
     B(cornice, -0.1, L + 0.1, -0.02, 0.22, roof - 0.35, roof + 0.05)            # cornice and coping
 # the lease, from the Meridian plan + the walk-through videos (feet, room frame; plan_study/corrected_plan_v1.png). Strip ~9'-11" wide for 26'-0" at the glass, 8'-10" to the back,
@@ -274,6 +278,8 @@ def _apply_cuts(site_name, prefix):
     bpy.context.view_layer.update(); site = bpy.data.objects.get(site_name)
     for co in [o for o in bpy.data.objects if o.name.startswith(prefix + "CUT_")]:
         m = site.modifiers.new("cut", 'BOOLEAN'); m.operation = 'DIFFERENCE'; m.object = co
+        try: m.use_self = True
+        except Exception: pass
         try: m.solver = 'EXACT'
         except Exception: pass
         with bpy.context.temp_override(object=site, active_object=site): bpy.ops.object.modifier_apply(modifier=m.name)
@@ -281,8 +287,8 @@ def _apply_cuts(site_name, prefix):
 def stage_building():
     r51, L = _face("HOUSTON", *_front("1005090023"), _h51)
     _face("HOUSTON", *_front("1005090021"), _generic("W", "tan"), prefix="BW_")
-    _face("HOUSTON", *_front("1005090026"), _generic("E", "cream"), prefix="BE_")
-    _apply_cuts("SITE_51", "B51_")
+    _face("HOUSTON", *_front("1005090026", near=proj(*_front("1005090023")[0])), _generic("E", "cream"), prefix="BE_")
+    _apply_cuts("SITE_51", "B51_"); _apply_cuts("SITE_W", "BW_"); _apply_cuts("SITE_E", "BE_")
     return "building: 51 front {:.1f} ft".format(L)
 
 # ---------- the room: shell (IN_), as found (EX_), fit-out (FIT_ / MON_) ----------

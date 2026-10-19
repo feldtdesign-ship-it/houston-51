@@ -6,7 +6,7 @@ Raw 8-bit PNGs go to renders/raw/<shot>.png; build/post_h51.py adds bloom, grade
 Cameras: 24 mm inside (Michael's rule), 35 mm outside. 2560 x 1440 like the 115 heroes.
 Look: white-painted brick, pale polished concrete, black paint, oak, the yellow tactile strip, his tees; warm track spots on the work, a cool soft window light from the street.
 """
-import bpy, math, os, sys
+import bpy, bmesh, math, os, sys
 from mathutils import Vector
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.dirname(HERE); BLEND = os.path.join(HERE, "houston_51_render.blend")
 RAW = os.path.join(OUT, "renders", "raw"); os.makedirs(RAW, exist_ok=True); SCR = os.path.join(HERE, "screens"); FT = 0.3048
@@ -19,13 +19,13 @@ SHOTS = {
  "H51_hero_5_reverse": ("in", (3.0, 77.0, 5.3), (6.0, 1.5, 5.0),   24, 4.0, 40.0),
  "H51_hero_6_galaga":  ("in", (13.5, 70.4, 4.9), (22.4, 77.8, 3.8), 24, 2.2, 12.0),
  "H51_hero_7_tables":  ("in", (5.0, 5.0, 3.4),  (6.5, 40.0, 5.2),  24, 2.8, 10.0),
- "H51_hero_8_street":  ("out", None, None, 35, 8.0, None),
+ "H51_hero_8_street":  ("out", None, None, 50, 5.6, None),
  "H51_doll_found":     ("doll", None, None, 35, 0, None),
  "H51_doll_white":     ("doll", None, None, 35, 0, None),
  "H51_doll_built":     ("doll", None, None, 35, 0, None),
  "H51_plan_built":     ("plan", None, None, 0, 0, None),
 }
-SHIFT = {"H51_hero_1_long": 0.10, "H51_hero_7_tables": 0.06}
+SHIFT = {"H51_hero_1_long": 0.10, "H51_hero_7_tables": 0.06, "H51_hero_8_street": 0.13}
 def root(): return bpy.data.objects["H51_IN"]
 def W(x, y, z): return root().matrix_world @ Vector((x * FT, y * FT, z * FT))
 def cycles(w, h, samples):
@@ -177,6 +177,51 @@ def cam(name, loc, target, lens, fstop=0, focus_ft=None, ortho=None, rot=None):
     d.dof.use_dof = bool(fstop and focus_ft)
     if d.dof.use_dof: d.dof.aperture_fstop = fstop; d.dof.focus_distance = focus_ft * FT
     return c
+def brick_facade(name, c1, c2, mortar, ang, bump=0.7):
+    """triplanar-ish brick for the Houston fronts: the world is rotated into the facade's frame so courses run level, then front/back faces use the xz plane and side faces the yz plane"""
+    m, n, l = fresh(name); out = n.new('ShaderNodeOutputMaterial'); b = n.new('ShaderNodeBsdfPrincipled'); tc = n.new('ShaderNodeTexCoord'); mp = n.new('ShaderNodeMapping'); sep = n.new('ShaderNodeSeparateXYZ')
+    mp.inputs['Rotation'].default_value = (0, 0, -ang); l.new(tc.outputs['Object'], mp.inputs['Vector']); l.new(mp.outputs[0], sep.inputs[0])
+    nrm = n.new('ShaderNodeNewGeometry'); mapn = n.new('ShaderNodeMapping'); mapn.inputs['Rotation'].default_value = (0, 0, -ang); mapn.vector_type = 'VECTOR'
+    # normal in object space is not exposed; use the geometry normal in world space, rotated the same way
+    l.new(nrm.outputs['Normal'], mapn.inputs['Vector']); sn = n.new('ShaderNodeSeparateXYZ'); l.new(mapn.outputs[0], sn.inputs[0])
+    ax = n.new('ShaderNodeMath'); ax.operation = 'ABSOLUTE'; l.new(sn.outputs['X'], ax.inputs[0]); ay = n.new('ShaderNodeMath'); ay.operation = 'ABSOLUTE'; l.new(sn.outputs['Y'], ay.inputs[0])
+    wx = n.new('ShaderNodeMath'); wx.operation = 'POWER'; wx.inputs[1].default_value = 6.0; l.new(ax.outputs[0], wx.inputs[0])
+    def brick_on(u, v):
+        cb = n.new('ShaderNodeCombineXYZ'); l.new(u, cb.inputs['X']); l.new(v, cb.inputs['Y']); br = n.new('ShaderNodeTexBrick')
+        br.inputs['Color1'].default_value = srgb(c1); br.inputs['Color2'].default_value = srgb(c2); br.inputs['Mortar'].default_value = srgb(mortar); br.inputs['Scale'].default_value = 1.0
+        br.inputs['Mortar Size'].default_value = 0.012; br.inputs['Mortar Smooth'].default_value = 0.4; br.inputs['Brick Width'].default_value = 0.21; br.inputs['Row Height'].default_value = 0.068; br.inputs['Bias'].default_value = 0.0; br.offset = 0.5; br.offset_frequency = 2
+        l.new(cb.outputs[0], br.inputs['Vector']); return br
+    b_xz = brick_on(sep.outputs['X'], sep.outputs['Z']); b_yz = brick_on(sep.outputs['Y'], sep.outputs['Z'])
+    mixc = n.new('ShaderNodeMix'); mixc.data_type = 'RGBA'; l.new(wx.outputs[0], mixc.inputs[0]); l.new(b_xz.outputs['Color'], mixc.inputs[6]); l.new(b_yz.outputs['Color'], mixc.inputs[7])
+    mixf = n.new('ShaderNodeMix'); mixf.data_type = 'FLOAT'; l.new(wx.outputs[0], mixf.inputs[0]); l.new(b_xz.outputs['Fac'], mixf.inputs[2]); l.new(b_yz.outputs['Fac'], mixf.inputs[3])
+    bm = n.new('ShaderNodeBump'); bm.inputs['Strength'].default_value = bump; bm.inputs['Distance'].default_value = 0.01; l.new(mixf.outputs[0], bm.inputs['Height']); l.new(bm.outputs[0], b.inputs['Normal'])
+    l.new(mixc.outputs[2], b.inputs['Base Color']); b.inputs['Roughness'].default_value = 0.88; l.new(b.outputs[0], out.inputs[0]); return m
+def street_realism():
+    import math as _m
+    ang = _m.atan2(root().matrix_world.to_3x3()[1][0], root().matrix_world.to_3x3()[0][0])
+    assign(("SITE_51", "B51_HOUSTON_BRICK"), brick_facade("st_brick51", "#8A5443", "#9B6450", "#B3ADA2", ang))
+    assign(("SITE_W", "BW_"), brick_facade("st_brickW", "#A58A66", "#B79B76", "#B3ADA2", ang)); assign(("SITE_E", "BE_"), brick_facade("st_brickE", "#C9BA98", "#D6C8A6", "#B3ADA2", ang))
+    for o in bpy.data.objects:      # the black ironwork stays black; trim and stone stay light
+        if o.name.startswith(("B51_HOUSTON_IRON", "BW_HOUSTON_IRON", "BE_HOUSTON_IRON")): o.data.materials.clear(); o.data.materials.append(plain("st_iron", "#0b0b0c", 0.35))
+        if o.name.startswith(("B51_HOUSTON_TRIM", "BW_HOUSTON_TRIM", "BE_HOUSTON_TRIM", "B51_HOUSTON_STONE")): o.data.materials.clear(); o.data.materials.append(plain("st_trim", "#CFC9BC", 0.7))
+        if ("_GLASS" in o.name and o.name.startswith(("B51_", "BW_", "BE_")) and "SHOP" not in o.name) or ("SHOPGLASS" in o.name and o.name.startswith(("BW_", "BE_"))):
+            gm, gn, gl = fresh("st_glass"); go = gn.new('ShaderNodeOutputMaterial'); gb = gn.new('ShaderNodeBsdfPrincipled'); gb.inputs['Base Color'].default_value = srgb("#0f1a22"); gb.inputs['Roughness'].default_value = 0.03; setp(gb, **{'Specular IOR Level': 0.8}); gl.new(gb.outputs[0], go.inputs[0]); o.data.materials.clear(); o.data.materials.append(gm)
+    # sidewalk: concrete with slab joints; road: asphalt
+    sw, sn, sl = fresh("st_walk"); so = sn.new('ShaderNodeOutputMaterial'); sb = sn.new('ShaderNodeBsdfPrincipled'); tc = sn.new('ShaderNodeTexCoord'); br = sn.new('ShaderNodeTexBrick'); nz = sn.new('ShaderNodeTexNoise'); bm = sn.new('ShaderNodeBump')
+    br.inputs['Scale'].default_value = 1.0; br.inputs['Brick Width'].default_value = 1.5; br.inputs['Row Height'].default_value = 1.5; br.inputs['Mortar Size'].default_value = 0.012; br.inputs['Color1'].default_value = srgb("#B9B6AE"); br.inputs['Color2'].default_value = srgb("#AFACA4"); br.inputs['Mortar'].default_value = srgb("#6E6C66"); nz.inputs['Scale'].default_value = 60
+    sl.new(tc.outputs['Object'], br.inputs['Vector']); sl.new(tc.outputs['Object'], nz.inputs['Vector']); sl.new(br.outputs['Color'], sb.inputs['Base Color']); sl.new(nz.outputs['Fac'], bm.inputs['Height']); bm.inputs['Strength'].default_value = 0.15; sl.new(bm.outputs[0], sb.inputs['Normal']); sb.inputs['Roughness'].default_value = 0.85; sl.new(sb.outputs[0], so.inputs[0]); assign(("SIDEWALK",), sw)
+    rd, rn, rl = fresh("st_road"); ro = rn.new('ShaderNodeOutputMaterial'); rb = rn.new('ShaderNodeBsdfPrincipled'); rtc = rn.new('ShaderNodeTexCoord'); rnz = rn.new('ShaderNodeTexNoise'); rbm = rn.new('ShaderNodeBump'); rcr = rn.new('ShaderNodeValToRGB')
+    rnz.inputs['Scale'].default_value = 25; rnz.inputs['Detail'].default_value = 10; rcr.color_ramp.elements[0].color = srgb("#1d1e20"); rcr.color_ramp.elements[1].color = srgb("#34363a")
+    rl.new(rtc.outputs['Object'], rnz.inputs['Vector']); rl.new(rnz.outputs['Fac'], rcr.inputs['Fac']); rl.new(rcr.outputs['Color'], rb.inputs['Base Color']); rl.new(rnz.outputs['Fac'], rbm.inputs['Height']); rbm.inputs['Strength'].default_value = 0.2; rl.new(rbm.outputs[0], rb.inputs['Normal']); rb.inputs['Roughness'].default_value = 0.6; rl.new(rb.outputs[0], ro.inputs[0]); assign(("ROADBED",), rd)
+    # PJ's signature in white on the black sign band, lit
+    sm, sn2, sl2 = fresh("st_sig"); sout = sn2.new('ShaderNodeOutputMaterial'); stex = sn2.new('ShaderNodeTexImage'); stex.image = bpy.data.images.load(os.path.join(OUT, "assets", "pj_sig_white.png"), check_existing=True)
+    sem = sn2.new('ShaderNodeEmission'); strn = sn2.new('ShaderNodeBsdfTransparent'); smix = sn2.new('ShaderNodeMixShader'); sem.inputs['Strength'].default_value = 3.0
+    sl2.new(stex.outputs['Color'], sem.inputs['Color']); sl2.new(stex.outputs['Alpha'], smix.inputs[0]); sl2.new(strn.outputs[0], smix.inputs[1]); sl2.new(sem.outputs[0], smix.inputs[2]); sl2.new(smix.outputs[0], sout.inputs[0])
+    wdt = 5.2; hgt = wdt * stex.image.size[1] / max(1, stex.image.size[0]); xc, zc, yy = 6.46, 10.5, -0.97
+    bm2 = bmesh.new(); pts = [((xc - wdt / 2, yy, zc - hgt / 2), (0, 0)), ((xc + wdt / 2, yy, zc - hgt / 2), (1, 0)), ((xc + wdt / 2, yy, zc + hgt / 2), (1, 1)), ((xc - wdt / 2, yy, zc + hgt / 2), (0, 1))]
+    vs = [bm2.verts.new((p[0] * FT, p[1] * FT, p[2] * FT)) for p, _ in pts]; fc = bm2.faces.new(vs); uv = bm2.loops.layers.uv.new()
+    for loop, (_, t) in zip(fc.loops, pts): loop[uv].uv = t
+    me = bpy.data.meshes.new("st_sigplane"); bm2.to_mesh(me); bm2.free(); so_ = bpy.data.objects.new("ST_SIG", me); bpy.context.scene.collection.objects.link(so_); so_.parent = root(); so_.data.materials.append(sm)
 def render(shot, w, h, samples):
     kind, loc, tgt, lens, fstop, focus = SHOTS[shot]; sc = bpy.context.scene; 
     if kind == 'plan': w, h = 1500, 2000
@@ -186,10 +231,13 @@ def render(shot, w, h, samples):
     elif kind == "out":
         set_visibility(kind, False, True); rig_interior(dusk=True); sc.view_settings.exposure = -0.3
         for o in bpy.data.objects:
-            if o.name == 'TREES': o.hide_render = True
-            if o.name == 'RIG_window': o.hide_viewport = True
+            if o.name == 'TREES' or o.name.startswith('ST_') and o.name != 'ST_SIG': o.hide_render = True
+            if o.type == 'LIGHT' or o.name.startswith('RIG_'):
+                try: o.data.energy *= 0.30
+                except Exception: pass
         bpy.data.objects['RIG_window'].data.energy = 0
-        c = cam(shot, W(-9.0, -58.0, 5.6), W(6.5, 0.0, 6.2), lens, fstop, 60.0)
+        street_realism(); add_light("street_fill", 'AREA', W(-6.0, -70.0, 12.0), W(6.5, 0.0, 7.0), 2200, (1.0, 0.78, 0.55), (14 * FT, 8 * FT))
+        c = cam(shot, W(-6.0, -74.0, 5.6), W(6.2, 0.0, 6.8), lens, fstop, 76.0)
     elif kind == "doll":
         set_visibility(kind, shot.endswith("found"), shot.endswith("built")); clear_lights(); world('flat')
         if shot.endswith("white"):
