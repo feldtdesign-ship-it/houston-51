@@ -22,7 +22,7 @@ TINTS = {'B': (255, 176, 118), 'H': (140, 232, 236), 'W': (255, 150, 90)}
 def save(name, im):
     im = im.convert('RGB'); hsv = im.convert('HSV'); sat = ImageStat.Stat(hsv).mean[1] / 255
     if sat < 0.06:      # line art on white: flip to light lines on a dark ground and tint it, so the screens glow in a dark room
-        g = ImageOps.autocontrast(im.convert('L'), cutoff=1).point(lambda v: 255 if v > 214 else v); g = ImageOps.invert(g); im = ImageOps.colorize(g, black=(5, 7, 13), white=TINTS.get(name[8], (255, 200, 150)))
+        g = ImageOps.autocontrast(im.convert('L'), cutoff=1).point(lambda v: 255 if v > 185 else v); g = ImageOps.invert(g); im = ImageOps.colorize(g, black=(5, 7, 13), white=TINTS.get(name[8], (255, 200, 150)))
     else:
         im = ImageEnhance.Brightness(im).enhance(0.92)
     im.save(os.path.join(OUT, name + '.jpg'), quality=92); print(name, 'night' if sat < 0.06 else 'colour', round(sat, 2))

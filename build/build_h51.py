@@ -221,31 +221,37 @@ def _uppers(B, L, gf, roof, nfl, bays, w=3.3, h=5.4, sill=2.7, cornice="PJ_TRIM"
             _win(B, cx - w / 2, cx + w / 2, z + sill * FT, z + (sill + h) * FT, panes=2, d=-0.12, glass="PJ_GLASS")
             B("PJ_TRIM", cx - w / 2 - 0.3, cx + w / 2 + 0.3, -0.12, 0.06, z + sill * FT - 0.08, z + sill * FT)
     B(cornice, -0.1, L + 0.1, -0.02, 0.22, roof - 0.35, roof + 0.05)            # cornice and coping
-# the lease, from the Meridian plan (feet, room frame): corridor 10 ft wide to the bath, wider rear room; ceiling 11.5 ft
-X0, X1 = 1.5, 11.5; XR = 17.5; Y_BATH0, Y_BATH1 = 40.0, 47.0; DEPTH = 67.6; CEIL = 11.5; T = 0.5
+# the lease, from the Meridian plan + the walk-through videos (feet, room frame; plan_study/corrected_plan_v1.png). Strip ~9'-11" wide for 26'-0" at the glass, 8'-10" to the back,
+# bath 8'-8" x 5'-3" on the WEST wall, a 3'-6" passage past it, doorway at 67'-7", then a 12'-6" x 24'-6" storage extension in the rear yard.
+X0 = 1.5; XF = X0 + 9.92; XB = X0 + 8.83; JOG_Y = 28.0; DEPTH = 67.6; EXT_D = 80.1; XE = 25.1; T = 0.5
+CEIL_F, CEIL_B, CEIL_X = 11.0, 9.5, 9.0; CEIL = CEIL_F; BATH_Y0, BATH_Y1 = 42.5, 51.2; BX0 = X0 + 3.58; DOORW = 3.3
+HALL = (XF + T, XF + T + 4.0)                       # the building's own entrance hall: 4 ft wide, drawn from the plan, not seen in the videos
 WIN = (1.7, 6.9); DOOR = (6.9, 11.3)
 def _h51(B, L):
-    B.cut(X0, X1, -(Y_BATH0 + 0.6) * FT, 0.05, 0.0, CEIL * FT)                         # corridor, open at the front
-    B.cut(X0, XR, -(DEPTH + 0.6) * FT, -(Y_BATH0 - 0.4) * FT, 0.0, CEIL * FT)           # bath zone and rear room
-    B.cut(12.5, 16.9, -(39.0) * FT, 0.05, 0.0, 9.0 * FT)                                # the apartment hall beside it
+    B.cut(X0, XF, -(JOG_Y) * FT, 0.05, 0.0, CEIL_F * FT)                                  # the wide front zone, open at the glass
+    B.cut(X0, XB, -(DEPTH + 0.6) * FT, -(JOG_Y - 0.4) * FT, 0.0, CEIL_F * FT)             # the narrow zone to the back wall
+    B.cut(X0, XE, -(EXT_D + 0.6) * FT, -(DEPTH - 0.4) * FT, 0.0, CEIL_F * FT)             # the storage extension (the building ends at 71 ft; the rest is yard)
+    B.cut(HALL[0], HALL[1], -(JOG_Y) * FT, 0.05, 0.0, 9.0 * FT)                           # the entrance hall beside the store
     FR = 0.3
     B("PJ_IRON", WIN[0], WIN[1], -0.02, 0.10, 0.0, 1.3 * FT)                             # stall riser
     _win(B, WIN[0], WIN[1], 1.3 * FT, 9.0 * FT, panes=1, d=0.02, glass="PJ_SHOPGLASS", f=FR)
     B("PJ_IRON", DOOR[0], DOOR[1], 0.02, 0.09, 0.0, 0.08)
     for xx in (DOOR[0], DOOR[1] - FR): B("PJ_IRON", xx, xx + FR, -0.01, 0.10, 0.0, 9.0 * FT)
     B("PJ_IRON", DOOR[0], DOOR[1], -0.01, 0.10, 7.6 * FT, 7.6 * FT + 0.1)                 # transom bar
-    B("PJ_SHOPGLASS", DOOR[0] + FR, DOOR[1] - FR, 0.03, 0.06, 0.15, 7.5 * FT)             # the glass door (leaf)
+    B("PJ_SHOPGLASS", DOOR[0] + FR, DOOR[1] - FR, 0.03, 0.06, 0.15, 7.5 * FT)             # the glass door (leaf), on the west end of the glass
     B("PJ_IRON", DOOR[0] + FR, DOOR[0] + FR + 0.15, 0.02, 0.08, 0.1, 7.5 * FT); B("PJ_IRON", DOOR[1] - FR - 0.15, DOOR[1] - FR, 0.02, 0.08, 0.1, 7.5 * FT)
     B("PJ_IRON", DOOR[0] + 0.8, DOOR[1] - 0.8, 0.09, 0.14, 3.85 * FT, 4.0 * FT)           # pull bar
     B("PJ_SHOPGLASS", DOOR[0] + FR, DOOR[1] - FR, 0.03, 0.06, 7.7 * FT, 8.9 * FT)         # transom glass
-    B("PJ_IRON", X0 - 0.4, X1 + 0.4, 0.0, 0.28, 9.0 * FT, GF)                             # black fascia, sign band
-    B("PJ_BRICK", 0, X0 - 0.4, -0.02, 0.10, 0.0, GF); B("PJ_BRICK", X1 + 0.4, 13.1, -0.02, 0.10, 0.0, GF)
-    # apartment door and the bar bay beside it
-    B("PJ_IRON", 13.4, 16.6, 0.02, 0.08, 0.12, 7.4 * FT); _win(B, 13.4, 16.6, 7.5 * FT, 9.0 * FT, panes=1, d=0.02)
-    B("PJ_STONE", 13.0, 17.0, 0.0, 0.35, 0.0, 0.12); B("PJ_BRICK", 13.1, 18.0, -0.02, 0.10, 9.0 * FT, GF)
-    B("PJ_BRICK", 16.8, 18.0, -0.02, 0.10, 0.0, 9.0 * FT)
-    _win(B, 18.2, 24.0, 1.6 * FT, 9.0 * FT, panes=2, d=0.02, glass="PJ_GLASS", f=0.3)
-    B("PJ_IRON", 18.0, L, 0.0, 0.24, 9.0 * FT, GF); B("PJ_IRON", 18.0, 24.3, -0.02, 0.10, 0.0, 1.6 * FT)
+    B("PJ_IRON", X0 - 0.4, XF + 0.1, 0.0, 0.28, 9.0 * FT, GF)                             # black fascia, sign band
+    B("PJ_BRICK", 0, X0 - 0.4, -0.02, 0.10, 0.0, GF); B("PJ_BRICK", XF + 0.1, HALL[0] + 0.5, -0.02, 0.10, 0.0, GF)
+    # the building entrance beside the store: dark door in a black surround, stone step, transom
+    ex0, ex1 = HALL[0] + 0.5, HALL[1] - 0.5
+    B("PJ_IRON", ex0, ex1, 0.02, 0.08, 0.12, 7.4 * FT); _win(B, ex0, ex1, 7.5 * FT, 9.0 * FT, panes=1, d=0.02)
+    B("PJ_STONE", HALL[0], HALL[1], 0.0, 0.35, 0.0, 0.12); B("PJ_BRICK", HALL[0] - 0.1, HALL[1] + 0.9, -0.02, 0.10, 9.0 * FT, GF)
+    B("PJ_BRICK", HALL[1] - 0.1, HALL[1] + 0.9, -0.02, 0.10, 0.0, 9.0 * FT)
+    # Milano's Bar, existing, not drawn in detail: dark glass, black frames
+    _win(B, HALL[1] + 1.2, 24.0, 1.6 * FT, 9.0 * FT, panes=2, d=0.02, glass="PJ_GLASS", f=0.3)
+    B("PJ_IRON", HALL[1] + 0.9, L, 0.0, 0.24, 9.0 * FT, GF); B("PJ_IRON", HALL[1] + 0.9, 24.3, -0.02, 0.10, 0.0, 1.6 * FT)
     if L > 24.3: B("PJ_BRICK", 24.3, L, -0.02, 0.10, 0.0, 9.0 * FT)
     _uppers(B, L, GF, ROOF["51"], 5, (L * 0.17, L * 0.5, L * 0.83))
 def _generic(roofkey, wall_light):
@@ -337,96 +343,101 @@ def stage_room():
     for o in [o for o in bpy.data.objects if o.name.startswith("H51_IN") or o.name.startswith(("IN_", "EX_", "FIT_", "MON_"))]: bpy.data.objects.remove(o, do_unlink=True)
     _face("IN", *_front("1005090023"), lambda B, L: None, prefix="H51_")
     white = mat_flat("in_white", "#F1EFEA", 0.95); floor = mat_flat("in_floor", "#DAD7D0", 0.9); black = mat_flat("in_black", "#0f0f0f", 0.5, 0.4)
-    # ---- the white box ----
-    box("IN_FLOOR_A", X0, X1 + T, 0, Y_BATH0, 0.0, 0.06, floor); box("IN_FLOOR_B", X0, XR, Y_BATH0, DEPTH, 0.0, 0.06, floor); box("IN_FLOOR_HALL", 12.0, 17.0, 0, 39.5, 0.0, 0.06, floor)
-    box("IN_CEIL_A", X0, X1 + T, 0, Y_BATH0, CEIL, CEIL + 0.3, white); box("IN_CEIL_B", X0, XR, Y_BATH0, DEPTH, CEIL, CEIL + 0.3, white)
-    box("IN_WALLE", X0 - T, X0, 0, DEPTH + T, 0, CEIL + 0.3, white)                                          # east wall, the whole length
-    box("IN_WALLW1", X1, X1 + T, 0, 42.0, 0, CEIL + 0.3, white); box("IN_WALLW1b", X1, X1 + T, 45.0, Y_BATH1, 0, CEIL + 0.3, white)
-    box("IN_WALLW1c", X1, X1 + T, 42.0, 45.0, 7.2, CEIL + 0.3, white)                                         # head over the bath door
-    box("IN_WALLW2", XR, XR + T, Y_BATH0 - 0.5, DEPTH + T, 0, CEIL + 0.3, white)                              # rear room, west wall
-    box("IN_WALLB", X0 - T, XR + T, DEPTH, DEPTH + T, 0, CEIL + 0.3, white)                                   # back wall
-    box("IN_BATHBACK", X1, XR, Y_BATH1, Y_BATH1 + T, 0, CEIL + 0.3, white); box("IN_HALLEND", 12.0, XR, 39.5, Y_BATH0 - 0.4, 0, CEIL + 0.3, white)
-    box("IN_HALLWALL", 17.0, 17.5, 0, 39.5, 0, CEIL + 0.3, white)
-    box("IN_BATHDOOR", X1 - 0.02, X1 + 0.12, 42.4, 44.6, 0.06, 7.1, black)
-    # track lighting, the one thing the room already has: two black runs and heads every five feet
-    for xx in (3.4, 9.6):
-        box("IN_TRACK_%d" % xx, xx - 0.05, xx + 0.05, 0.5, Y_BATH0 - 0.5, CEIL - 0.12, CEIL - 0.02, black)
-        for k in range(8): box("IN_HEAD_%d_%d" % (xx, k), xx - 0.14, xx + 0.14, 2.0 + k * 5.0 - 0.14, 2.0 + k * 5.0 + 0.14, CEIL - 0.45, CEIL - 0.12, black)
+    HT = CEIL_F + 0.3
+    # ---- the white box: zones follow the plan. Front zone y 0..28 is 9'-11" wide, the narrow zone to 67'-7" is 8'-10", the storage extension is 23'-7" x 12'-6" ----
+    box("IN_FLOOR_A", X0, XF, 0, JOG_Y, 0.0, 0.06, floor); box("IN_FLOOR_B", X0, XB, JOG_Y, DEPTH, 0.0, 0.06, floor); box("IN_FLOOR_X", X0, XE, DEPTH, EXT_D, 0.0, 0.06, floor)
+    box("IN_FLOOR_HALL", HALL[0], HALL[1], 0, JOG_Y, 0.0, 0.06, floor)
+    box("IN_CEIL_A", X0, XF, 0, JOG_Y, CEIL_F, HT, white); box("IN_CEIL_A2", X0, XB, JOG_Y, BATH_Y0, CEIL_F, HT, white); box("IN_CEIL_B", X0, XB, BATH_Y0, DEPTH, CEIL_B, CEIL_B + 0.3, white); box("IN_CEIL_X", X0, XE, DEPTH, EXT_D, CEIL_X, CEIL_X + 0.3, white)
+    box("IN_WALLE", X0 - T, X0, 0, EXT_D + T, 0, HT, white)                                                       # east wall: lot line, the whole way back
+    box("IN_WALLW1", XF, XF + T, 0, JOG_Y, 0, HT, white)                                                          # west wall, front zone
+    box("IN_WALLW_JOG", XB, XF + T, JOG_Y, JOG_Y + T, 0, HT, white)                                                # the 4 ft jog
+    box("IN_WALLW2", XB, XB + T, JOG_Y + T, BATH_Y0, 0, HT, white)                                                 # west wall, narrow zone to the bath
+    box("IN_WALLW3", XB, XB + T, BATH_Y0, DEPTH, 0, CEIL_B + 0.3, white)                                           # west wall past the bath, to the back
+    box("IN_WALLB", X0 + DOORW, XE + T, DEPTH, DEPTH + T, 0, CEIL_B + 0.3, white); box("IN_WALLB_HEAD", X0, X0 + DOORW, DEPTH, DEPTH + T, 6.9, CEIL_B + 0.3, white)   # back wall of the strip with the doorway
+    box("IN_WALLX_W", XE, XE + T, DEPTH, EXT_D + T, 0, CEIL_X + 0.3, white); box("IN_WALLX_B", X0, XE + T, EXT_D, EXT_D + T, 0, CEIL_X + 0.3, white)       # the extension
+    box("IN_HALLWALL", HALL[1], HALL[1] + T, 0, JOG_Y + T, 0, HT, white); box("IN_HALLEND", HALL[0], HALL[1] + T, JOG_Y, JOG_Y + T, 0, HT, white)
+    # bath, 8'-8" x 5'-3", on the west wall; its door faces the corridor at the front end
+    box("IN_BATH_E1", BX0, BX0 + 0.4, BATH_Y0, BATH_Y0 + 0.2, 0, CEIL_B + 0.3, white); box("IN_BATH_E2", BX0, BX0 + 0.4, BATH_Y0 + 2.9, BATH_Y1, 0, CEIL_B + 0.3, white)
+    box("IN_BATH_HEAD", BX0, BX0 + 0.4, BATH_Y0 + 0.2, BATH_Y0 + 2.9, 6.67, CEIL_B + 0.3, white); box("IN_BATH_FRONT", BX0, XB, BATH_Y0 - 0.4, BATH_Y0, 0, CEIL_B + 0.3, white)
+    box("IN_BATH_BACK", BX0, XB, BATH_Y1, BATH_Y1 + 0.4, 0, CEIL_B + 0.3, white); box("IN_BATH_FLOOR", BX0 + 0.4, XB, BATH_Y0, BATH_Y1, 0.0, 0.07, mat_flat("in_bathfloor", "#C9C6C0", 0.7))
+    box("IN_BATH_WC", XB - 2.2, XB - 0.4, BATH_Y1 - 2.0, BATH_Y1 - 0.4, 0.07, 1.4, white); box("IN_BATH_SINK", XB - 1.6, XB - 0.4, BATH_Y0 + 0.6, BATH_Y0 + 2.2, 2.2, 3.3, white)
+    box("IN_BATHDOOR", BX0 + 0.05, BX0 + 0.2, BATH_Y0 + 0.4, BATH_Y0 + 2.7, 0.07, 6.67, black)
+    box("IN_PARTITION", BX0, BX0 + 0.4, BATH_Y1 + 0.4, DEPTH, 0, CEIL_B + 0.3, white)                              # the passage's west wall, past the bath: 3'-6" clear
+    box("IN_AC", XF - 0.9, XF, 10.0, 14.0, 8.8, 10.3, white)                                                       # the split A/C on the west wall, front zone
+    box("IN_RAD", X0, X0 + 0.65, DEPTH + 1.0, DEPTH + 5.0, 0.07, 2.4, black)                                       # the cast-iron radiator, just inside the extension door
+    # track lighting: two runs and heads every five feet (the room has it already)
+    for xx in (X0 + 1.8, X0 + 7.3):
+        box("IN_TRACK_%d" % xx, xx - 0.05, xx + 0.05, 0.5, 41.5, CEIL_F - 0.12, CEIL_F - 0.02, black)
+        for k in range(8): box("IN_HEAD_%d_%d" % (xx, k), xx - 0.14, xx + 0.14, 2.0 + k * 5.0 - 0.14, 2.0 + k * 5.0 + 0.14, CEIL_F - 0.45, CEIL_F - 0.12, black)
+    for k in range(3):
+        for j in range(3): box("IN_CAN_%d_%d" % (k, j), 5.0 + j * 7.0 - 0.3, 5.0 + j * 7.0 + 0.3, 71.5 + k * 3.6 - 0.3, 71.5 + k * 3.6 + 0.3, CEIL_X - 0.03, CEIL_X, white)
     # ---- as found ----
     marble = mat_flat("ex_marble", "#E9E8E4", 0.35); wood = mat_flat("ex_wood", "#8C7455", 0.6); slate = mat_flat("ex_slate", "#454A4F", 0.7); steel = mat_flat("ex_steel", "#0c0c0c", 0.4, 0.6)
-    timber = mat_flat("ex_timber", "#D8B77A", 0.7); tile = mat_flat("ex_tilebase", "#101010", 0.4); hexw = mat_flat("ex_hexwhite", "#F4F3EF", 0.3); plaster = mat_flat("ex_plaster", "#F6F5F1", 0.9)
-    grout = mat_flat("ex_grout", "#6E6B65", 0.9); box("EX_GROUT", X0, X1, 0.0, 24.0, 0.06, 0.075, grout)
-    _, n1 = hexgrid("EX_HEXFLOOR", marble, X0, X1, 0.0, 24.0, 0.075, 0.72, 0.045, 0.04)
-    box("EX_WOOD", X0, X1, 24.0, 30.0, 0.06, 0.10, wood)
-    box("EX_SLATE", X0, XR, Y_BATH1, DEPTH, 0.06, 0.10, slate); box("EX_SLATE_C", X0, X1, 30.0, Y_BATH1, 0.06, 0.10, slate)
-    for nm, xw, face in (("E", X0, 1), ("W", X1, -1)):
-        box("EX_TILEWALL_" + nm, xw - (0.04 if face > 0 else -0.0), xw + (0.0 if face > 0 else 0.04), 29.0, 40.0, 0.06, 9.5, tile)
-        hexwall("EX_TILEHEX_" + nm, hexw, xw + face * 0.045, 29.0, 40.0, 0.06, 9.5, 0.5, 0.03, face, skip=lambda i, j: (i * 2 + j) % 5 == 0)
-    # the plaster rosette on the east wall: a disc and two rings
+    timber = mat_flat("ex_timber", "#D8B77A", 0.7); tile = mat_flat("ex_tilebase", "#101010", 0.4); hexw = mat_flat("ex_hexwhite", "#F4F3EF", 0.3); plaster = mat_flat("ex_plaster", "#F6F5F1", 0.9); grout = mat_flat("ex_grout", "#6E6B65", 0.9)
+    box("EX_GROUT", X0, XF, 0.0, 29.0, 0.06, 0.075, grout); box("EX_GROUT2", X0, XB, 29.0, 35.0 - 0.01, 0.06, 0.07, grout); box("EX_GROUT3", X0, XB, 35.0, 47.0, 0.06, 0.075, grout)
+    _, n1 = hexgrid("EX_HEXFLOOR", marble, X0, XF, 0.0, 28.0, 0.075, 0.72, 0.045, 0.04); _, n1b = hexgrid("EX_HEXFLOOR2", marble, X0, XB, 28.0, 29.0 + 0.0, 0.075, 0.5, 0.045, 0.04); _, n1c = hexgrid("EX_HEXFLOOR3", marble, X0, XB, 35.0, 47.0, 0.075, 0.72, 0.045, 0.04)
+    box("EX_WOOD", X0, XB, 29.0, 35.0, 0.06, 0.10, wood); box("EX_DRAIN", X0 + 4.0, X0 + 4.9, 31.6, 32.5, 0.10, 0.12, mat_flat("ex_drain", "#FAFAFA", 0.5))
+    box("EX_SLATE", X0, BX0, 47.0, DEPTH, 0.06, 0.10, slate); box("EX_SLATE_X", X0, XE, DEPTH, EXT_D, 0.06, 0.10, slate)
+    box("EX_TILEWALL_E", X0 - 0.04, X0, 30.0, 44.0, 0.06, 9.5, tile)                                                # the east wall in the tile zone: black marble with the rosette
+    box("EX_TILEWALL_W", XB, XB + 0.04, 33.0, BATH_Y0, 0.06, 9.5, tile)
+    hexwall("EX_TILEHEX_W", hexw, XB - 0.045, 33.0, BATH_Y0 - 0.2, 3.3, 9.5, 0.5, 0.03, -1, skip=lambda i, j: (i * 2 + j) % 5 == 0)
+    box("EX_JAMB", XB - 0.5, XB, 32.4, 33.0, 0.06, 7.0, mat_flat("ex_steelbright", "#B9BBBE", 0.25, 0.9))              # the stainless jamb where the tile starts
+    import mathutils
     for k, (rr, dd) in enumerate(((2.3, 0.10), (1.8, 0.16), (1.2, 0.22), (0.5, 0.28))):
         bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=True, segments=36, radius1=rr * FT, radius2=rr * FT * 0.97, depth=dd * FT)
-        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=__import__('mathutils').Matrix.Rotation(math.radians(90), 3, 'Y'), verts=bm.verts)
-        bmesh.ops.translate(bm, vec=((X0 + dd / 2) * FT, 26.4 * FT, 6.6 * FT), verts=bm.verts); mesh_obj("EX_ROSETTE_%d" % k, bm, plaster)
-    for k, y in enumerate((1.0, 7.6, 14.2, 20.8)):                                                          # steel portals on the west wall, header beam, timber studs above
-        box("EX_STEEL_COL_%d" % k, X1 - 0.75, X1, y, y + 0.55, 0.06, CEIL, steel)
-    box("EX_STEEL_BEAM", X1 - 0.75, X1, 1.0, 21.35, 9.0, 9.9, steel)
-    for k, y in enumerate((1.55, 7.6, 14.2)):
-        for s in (0.0, 2.0, 4.0): box("EX_TIMBER_%d_%d" % (k, s), X1 - 0.45, X1 - 0.30, y + 0.6 + s, y + 0.75 + s, 9.9, CEIL - 0.1, timber)
-        box("EX_TIMBER_T%d" % k, X1 - 0.45, X1 - 0.30, y + 0.6, y + 6.0, CEIL - 0.25, CEIL - 0.1, timber); box("EX_TIMBER_B%d" % k, X1 - 0.45, X1 - 0.30, y + 0.6, y + 6.0, 9.9, 10.05, timber)
-    box("EX_RAD", XR - 0.7, XR - 0.05, 60.0, 62.2, 0.10, 2.4, steel)
+        bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=mathutils.Matrix.Rotation(math.radians(90), 3, 'Y'), verts=bm.verts)
+        bmesh.ops.translate(bm, vec=((X0 + dd / 2) * FT, 38.0 * FT, 6.4 * FT), verts=bm.verts); mesh_obj("EX_ROSETTE_%d" % k, bm, plaster)
+    for k, y in enumerate((1.5, 7.5, 13.5, 19.5, 25.0)): box("EX_STEEL_COL_%d" % k, X0, X0 + 0.8, y, y + 0.9, 0.06, CEIL_F, steel)                  # portals on the EAST wall, left walking in
+    box("EX_STEEL_BEAM", X0, X0 + 0.8, 1.5, 25.9, 9.0, 9.9, steel)
+    for k, y in enumerate((2.4, 8.4, 14.4, 20.4)): box("EX_TIMBER_B%d" % k, X0 + 0.3, X0 + 0.45, y, y + 4.7, 9.9, 10.05, timber); box("EX_TIMBER_T%d" % k, X0 + 0.3, X0 + 0.45, y, y + 4.7, CEIL_F - 0.25, CEIL_F - 0.1, timber); box("EX_TIMBER_M%d" % k, X0 + 0.3, X0 + 0.45, y + 2.3, y + 2.45, 9.9, CEIL_F - 0.1, timber)
     # ---- the fit-out ----
     oak = mat_flat("fit_oak", "#9A7549", 0.7); pipe_m = mat_flat("fit_pipe", "#1A1A1A", 0.45, 0.6); frm = mat_flat("fit_frame", "#111111", 0.5); matb = mat_flat("fit_mat", "#E6E1D3", 1.0)
     arts = sorted(glob.glob(os.path.join(ART_DIR, "art_*.jpg"))); FW, FH, FD, LIP = 16 / 12, 20 / 12, 0.07, 0.07
-    ys = [4.0 + i * 4.0 for i in range(9)]
-    for i, yc in enumerate(ys):                                                                             # nine prints on the east wall, one level row
+    for i, yc in enumerate([4.0 + i * 4.0 for i in range(9)]):                                                  # nine prints on the east wall, one level row
         zc = 5.4; x = X0
         for nm, (ya, yb, za, zb) in (("t", (yc - FW/2, yc + FW/2, zc + FH/2 - LIP, zc + FH/2)), ("b", (yc - FW/2, yc + FW/2, zc - FH/2, zc - FH/2 + LIP)), ("l", (yc - FW/2, yc - FW/2 + LIP, zc - FH/2, zc + FH/2)), ("r", (yc + FW/2 - LIP, yc + FW/2, zc - FH/2, zc + FH/2))):
             box("FIT_GAL_FR_%s%d" % (nm, i), x, x + FD, ya, yb, za, zb, frm)
         box("FIT_GAL_MAT%d" % i, x, x + FD - 0.02, yc - FW/2 + LIP, yc + FW/2 - LIP, zc - FH/2 + LIP, zc + FH/2 - LIP, matb)
         quad_x("FIT_GAL_PRINT%d" % i, yc - 11/24, yc + 11/24, zc - 14/24, zc + 14/24, x + FD - 0.012, image_mat("print_%d" % i, arts[i % len(arts)]))
-    UP = [3.0 + 4.0 * k for k in range(10)]; PZ = (6.4, 8.0); RZ = 5.0; RO = 1.1; xw = X1                      # the pipe-and-plank unit on the west wall
-    for y in UP:
-        pipe("FIT_UNIT_UP_%d" % y, (xw - 0.08, y, 0.06), (xw - 0.08, y, CEIL - 0.9), pipe_m); pipe("FIT_UNIT_ARM_%d" % y, (xw - 0.08, y, RZ), (xw - RO, y, RZ), pipe_m)
-        for z in PZ: pipe("FIT_UNIT_BRK_%d_%d" % (y, z * 10), (xw - 0.08, y, z - 0.25), (xw - 1.0, y, z - 0.25), pipe_m)
-    for a, b in zip(UP, UP[1:]):
-        for z in PZ: box("FIT_UNIT_PLANK_%d_%d" % (a, z * 10), xw - 1.0, xw - 0.02, a - 0.3, b + 0.3, z - 0.12, z, oak)
-        pipe("FIT_UNIT_RAIL_%d" % a, (xw - RO, a, RZ), (xw - RO, b, RZ), pipe_m, r=0.045)
-    cws = [("cream", "#F2DFC0"), ("navy", "#304766"), ("lilac", "#EDD0EF"), ("moss", "#4C605E"), ("peach", "#FEA580"), ("black", "#151515"), ("white", "#F4F2EC")]
-    cwm = [mat_flat("fit_cw_" + n, h, 0.95) for n, h in cws]; nt = 0
+    PZ = (6.4, 8.0); RZ = 5.0; RO = 1.1; cws = [("cream", "#F2DFC0"), ("navy", "#304766"), ("lilac", "#EDD0EF"), ("moss", "#4C605E"), ("peach", "#FEA580"), ("black", "#151515"), ("white", "#F4F2EC")]
+    cwm = [mat_flat("fit_cw_" + n, h, 0.95) for n, h in cws]; nt = 0; q = 0
     pts = [(-0.30, 0.0), (0.30, 0.0), (0.95, -0.28), (0.95, -0.72), (0.66, -0.78), (0.62, -1.65), (-0.62, -1.65), (-0.66, -0.78), (-0.95, -0.72), (-0.95, -0.28)]
-    for k, (a, b) in enumerate(zip(UP, UP[1:])):                                                           # tees on hangers, one colourway to a bay
-        yy = a + 0.55
-        while yy < b - 0.45:
-            bm = bmesh.new(); vs = [bm.verts.new(((xw - RO + u) * FT, yy * FT, (RZ + 0.05 + v) * FT)) for u, v in pts]; f = bm.faces.new(vs); res = bmesh.ops.extrude_face_region(bm, geom=[f])
-            bmesh.ops.translate(bm, vec=(0, 0.05 * FT, 0), verts=[v for v in res["geom"] if isinstance(v, bmesh.types.BMVert)]); mesh_obj("FIT_TEE_%03d" % nt, bm, cwm[k % len(cwm)]); nt += 1; yy += 0.42
-    q = 0
-    for a, b in zip(UP, UP[1:]):                                                                            # folded stacks on the planks
-        for z in PZ:
-            q += 1
-            if q % 4 == 0: continue
-            for t in range(4 + q % 3): box("FIT_FOLD_%d_%d" % (q, t), xw - 0.92, xw - 0.12, a + 0.4, b - 0.4, z + t * 0.085, z + (t + 1) * 0.085 - 0.012, cwm[q % len(cwm)])
-    for i, (ya, yb) in enumerate(((13.0, 18.5), (23.0, 28.5))):                                             # two oak tables with stacks
-        box("FIT_TBL_TOP_%d" % i, 4.6, 8.4, ya, yb, 2.45, 2.6, oak)
-        for x, y in ((4.8, ya + 0.3), (8.2, ya + 0.3), (4.8, yb - 0.3), (8.2, yb - 0.3)): pipe("FIT_TBL_LEG_%d_%d_%d" % (i, x * 10, y * 10), (x, y, 0.06), (x, y, 2.45), pipe_m)
-        for s in range(4):
-            for t in range(5): box("FIT_FOLD_T%d_%d_%d" % (i, s, t), 4.9 + (s % 2) * 1.7, 6.2 + (s % 2) * 1.7, ya + 0.4 + (s // 2) * 2.5, ya + 2.6 + (s // 2) * 2.5, 2.6 + t * 0.085, 2.6 + (t + 1) * 0.085 - 0.012, cwm[(i * 3 + s) % len(cwm)])
-    # ---- the screens: 15, every one a plane named MON_SCR_* with its own UVs; the page plays a clip on each ----
-    scr = mat_flat("mon_off", "#050505", 0.3); nsc = 0
-    def monitor_front(name, xc, y, zc, w, h):                                                             # frame behind, screen in front, facing the street
-        box("FIT_MON_FR_" + name, xc - w/2 - 0.06, xc + w/2 + 0.06, y, y + 0.14, zc - h/2 - 0.06, zc + h/2 + 0.06, frm)
-        quad("MON_SCR_" + name, xc - w/2, xc + w/2, zc - h/2, zc + h/2, y - 0.01, -1, scr)
-    pw, ph = 1.75, 3.1                                                                                       # the window: three portrait 43 inch panels facing the street
-    for i in range(3): monitor_front("W%d" % (i + 1), WIN[0] + 0.45 + pw / 2 + i * (pw + 0.04), 0.9, 4.6, pw, ph)
-    lw, lh = 3.1, 1.75                                                                                       # the back wall: a 3 by 2 video wall of 43 inch landscape panels
-    for r in range(2):
-        for c in range(3): monitor_front("B%d" % (r * 3 + c + 1), 9.5 + (c - 1) * (lw + 0.05), DEPTH - 0.16, 4.2 + (1 - r) * (lh + 0.05), lw, lh)
-    for i, y in enumerate((13.0, 24.0, 35.0)):                                                                # three double-sided panels hung from the ceiling down the corridor
-        xc = 6.5; zc = 8.0; pipe("FIT_HANG_POLE_%d" % i, (xc, y, zc + lh / 2), (xc, y, CEIL), pipe_m, r=0.05)
+    for tag, xw, UP in (("F", XF, [3.0 + 4.0 * k for k in range(7)]), ("B", XB, [30.5, 34.5, 38.5])):          # the pipe-and-plank unit on the WEST wall, front zone and the narrow zone
+        for y in UP:
+            pipe("FIT_UNIT_UP_%s%d" % (tag, y * 10), (xw - 0.08, y, 0.06), (xw - 0.08, y, 8.7), pipe_m); pipe("FIT_UNIT_ARM_%s%d" % (tag, y * 10), (xw - 0.08, y, RZ), (xw - RO, y, RZ), pipe_m)
+            for z in PZ: pipe("FIT_UNIT_BRK_%s%d_%d" % (tag, y * 10, z * 10), (xw - 0.08, y, z - 0.25), (xw - 1.0, y, z - 0.25), pipe_m)
+        for k, (a, b) in enumerate(zip(UP, UP[1:])):
+            for z in PZ: box("FIT_UNIT_PLANK_%s%d_%d" % (tag, a * 10, z * 10), xw - 1.0, xw - 0.02, a - 0.3, b + 0.3, z - 0.12, z, oak)
+            pipe("FIT_UNIT_RAIL_%s%d" % (tag, a * 10), (xw - RO, a, RZ), (xw - RO, b, RZ), pipe_m, r=0.045)
+            yy = a + 0.55
+            while yy < b - 0.45:
+                bm = bmesh.new(); vs = [bm.verts.new(((xw - RO + u) * FT, yy * FT, (RZ + 0.05 + v) * FT)) for u, v in pts]; f = bm.faces.new(vs); res = bmesh.ops.extrude_face_region(bm, geom=[f])
+                bmesh.ops.translate(bm, vec=(0, 0.05 * FT, 0), verts=[v for v in res["geom"] if isinstance(v, bmesh.types.BMVert)]); mesh_obj("FIT_TEE_%03d" % nt, bm, cwm[(k + len(tag) * 2) % len(cwm)]); nt += 1; yy += 0.42
+            for z in PZ:
+                q += 1
+                if q % 4 == 0: continue
+                for t in range(4 + q % 3): box("FIT_FOLD_%d_%d" % (q, t), xw - 0.92, xw - 0.12, a + 0.4, b - 0.4, z + t * 0.085, z + (t + 1) * 0.085 - 0.012, cwm[q % len(cwm)])
+    for i, (ya, yb) in enumerate(((8.0, 13.5), (17.0, 22.5))):                                                  # two oak tables with stacks, in the middle of the wide front zone
+        box("FIT_TBL_TOP_%d" % i, 4.7, 7.7, ya, yb, 2.45, 2.6, oak)
+        for x, y in ((4.9, ya + 0.3), (7.5, ya + 0.3), (4.9, yb - 0.3), (7.5, yb - 0.3)): pipe("FIT_TBL_LEG_%d_%d_%d" % (i, x * 10, y * 10), (x, y, 0.06), (x, y, 2.45), pipe_m)
+        for s in range(2):
+            for t in range(5): box("FIT_FOLD_T%d_%d_%d" % (i, s, t), 4.95, 7.45, ya + 0.4 + s * 2.5, ya + 2.6 + s * 2.5, 2.6 + t * 0.085, 2.6 + (t + 1) * 0.085 - 0.012, cwm[(i * 3 + s) % len(cwm)])
+    yel = mat_flat("fit_yellow", "#F6C500", 0.5); box("FIT_STRIP", X0, X0 + 1.0, 0.4, EXT_D - 0.7, 0.06, 0.12, yel)                      # the ADA tactile strip: the platform edge, indoors
+    box("FIT_BLACKWALL", X0, XE, EXT_D - 0.03, EXT_D, 0.06, CEIL_X, mat_flat("fit_black", "#0c0c0c", 0.5))                              # black paint on the extension's back wall, behind the video wall
+    # ---- the screens: 15, each a plane named MON_SCR_* with its own UVs ----
+    scr = mat_flat("mon_off", "#050505", 0.3)
+    def monitor_front(name, xc, y, zc, w, h):
+        box("FIT_MON_FR_" + name, xc - w/2 - 0.06, xc + w/2 + 0.06, y, y + 0.14, zc - h/2 - 0.06, zc + h/2 + 0.06, frm); quad("MON_SCR_" + name, xc - w/2, xc + w/2, zc - h/2, zc + h/2, y - 0.01, -1, scr)
+    pw, ph = 1.75, 3.1
+    for i in range(3): monitor_front("W%d" % (i + 1), WIN[0] + 0.45 + pw / 2 + i * (pw + 0.04), 0.9, 4.6, pw, ph)           # the window: three portrait panels facing the street
+    lw, lh = 3.1, 1.75
+    for r in range(2):                                                                                         # the video wall on the extension's back wall, seen down the whole corridor through the doorway
+        for c in range(3): monitor_front("B%d" % (r * 3 + c + 1), 7.0 + (c - 1) * (lw + 0.05), EXT_D - 0.16, 4.2 + (1 - r) * (lh + 0.05), lw, lh)
+    for i, y in enumerate((11.0, 21.0, 33.0)):                                                                 # three double-sided panels hung from the ceiling down the corridor
+        xc = 6.0; zc = 8.0; pipe("FIT_HANG_POLE_%d" % i, (xc, y, zc + lh / 2), (xc, y, CEIL_F), pipe_m, r=0.05)
         box("FIT_HANG_BODY_%d" % i, xc - lw/2 - 0.06, xc + lw/2 + 0.06, y - 0.07, y + 0.07, zc - lh/2 - 0.06, zc + lh/2 + 0.06, frm)
         quad("MON_SCR_H%da" % (i + 1), xc - lw/2, xc + lw/2, zc - lh/2, zc + lh/2, y - 0.08, -1, scr); quad("MON_SCR_H%db" % (i + 1), xc - lw/2, xc + lw/2, zc - lh/2, zc + lh/2, y + 0.08, +1, scr)
-    yel = mat_flat("fit_yellow", "#F6C500", 0.5); box("FIT_STRIP", X0, X0 + 1.0, 0.4, 66.4, 0.06, 0.12, yel)                          # the ADA tactile strip, PJ yellow, the platform edge indoors (115 Avenue A)
-    box("FIT_BLACKWALL", X0, XR, DEPTH - 0.03, DEPTH, 0.06, CEIL, mat_flat("fit_black", "#0c0c0c", 0.5))                              # black paint behind the video wall
-    return "room: hexes %d, tees %d, screens %d" % (n1, nt, len([o for o in bpy.data.objects if o.name.startswith("MON_SCR_")]))
+    return "room: hexes %d, tees %d, screens %d" % (n1 + n1b + n1c, nt, len([o for o in bpy.data.objects if o.name.startswith("MON_SCR_")]))
 
 def export_glb(filename="houston_51.glb"):
     vl = bpy.context.view_layer

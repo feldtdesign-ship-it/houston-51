@@ -13,8 +13,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.dirname(HERE); 
 SRC = os.path.join(HERE, "houston_51.blend"); DST = os.path.join(HERE, "houston_51_render.blend")
 MOTT = os.path.join(LOC, "mott-167", "build", "mott_167.blend")
 FT = 0.3048
-X0, X1, XR, DEPTH, CEIL = 1.5, 11.5, 17.5, 67.6, 11.5
-UP = [3.0 + 4.0 * k for k in range(10)]; RZ, RO = 5.0, 1.1; TEE_PITCH = 0.35; HOOK = 0.022
+X0 = 1.5; XF = X0 + 9.92; XB = X0 + 8.83; DEPTH = 67.6; EXT_D = 80.1; XE = 25.1; CEIL = 11.0
+UNITS = ((XF, [3.0 + 4.0 * k for k in range(7)]), (XB, [30.5, 34.5, 38.5])); RZ, RO = 5.0, 1.1; TEE_PITCH = 0.35; HOOK = 0.022
 BAY = ('cream', 'navy', 'lilac', 'moss', 'peach', 'cream', 'navy', 'lilac', 'moss')
 def root(): return bpy.data.objects["H51_IN"]
 def srgb(h, a=1.0):
@@ -48,17 +48,17 @@ def append_assets():
         got += 1
     return "assets: %d collections" % got
 def real_tees():
-    for o in [o for o in bpy.data.objects if o.name in ('FIT_STRIP', 'FIT_BLACKWALL')]: bpy.data.objects.remove(o, do_unlink=True)
-    for o in [o for o in bpy.data.objects if o.name.startswith("FIT_TEE_")]: bpy.data.objects.remove(o, do_unlink=True)
-    c = coll("RenderTees"); n = 0; z = RZ + 0.045 - HOOK / FT
-    for k, (a, b) in enumerate(zip(UP, UP[1:])):
-        cw = BAY[k % len(BAY)]; y = a + 0.5; i = 0
-        while y < b - 0.45:
-            ac = bpy.data.collections.get('ASSET_tee_%s_%02d' % (cw, i % 3 + 1))
-            if not ac: return 'tee assets missing'
-            e = bpy.data.objects.new('RTEE_%03d' % n, None); e.instance_type = 'COLLECTION'; e.instance_collection = ac; e.empty_display_size = 0.1
-            e.location = ((X1 - RO) * FT, y * FT, z * FT); e.rotation_euler = (0, 0, math.radians(90)); c.objects.link(e); e.parent = root(); n += 1; i += 1; y += TEE_PITCH
-    return "%d real tees on the rail" % n
+    for o in [o for o in bpy.data.objects if o.name.startswith("FIT_TEE_") or o.name in ('FIT_STRIP',)]: bpy.data.objects.remove(o, do_unlink=True)
+    c = coll("RenderTees"); n = 0; z = RZ + 0.045 - HOOK / FT; bay = 0
+    for xw, UP in UNITS:
+        for a, b in zip(UP, UP[1:]):
+            cw = BAY[bay % len(BAY)]; bay += 1; y = a + 0.5; i = 0
+            while y < b - 0.45:
+                ac = bpy.data.collections.get('ASSET_tee_%s_%02d' % (cw, i % 3 + 1))
+                if not ac: return 'tee assets missing'
+                e = bpy.data.objects.new('RTEE_%03d' % n, None); e.instance_type = 'COLLECTION'; e.instance_collection = ac; e.empty_display_size = 0.1
+                e.location = ((xw - RO) * FT, y * FT, z * FT); e.rotation_euler = (0, 0, math.radians(90)); c.objects.link(e); e.parent = root(); n += 1; i += 1; y += TEE_PITCH
+    return "%d real tees on the two rails" % n
 def galaga():
     ac = bpy.data.collections.get('Coin-op Arcade Game Cabinet Galaga')
     if not ac: return 'galaga missing'
@@ -66,10 +66,10 @@ def galaga():
     lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))); hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     ac.instance_offset = ((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z)
     e = bpy.data.objects.new('galaga_inst', None); e.instance_type = 'COLLECTION'; e.instance_collection = ac; coll("RenderTees").objects.link(e); e.parent = root()
-    e.location = ((X0 + 2.5) * FT, (DEPTH - 2.5) * FT, 0.06 * FT); e.rotation_euler = (0, 0, math.radians(45)); return "galaga kitty-corner, back-east"
+    e.location = ((XE - 2.6) * FT, (EXT_D - 2.6) * FT, 0.06 * FT); e.rotation_euler = (0, 0, math.radians(-45)); return "galaga kitty-corner, back-west corner of the extension"
 def yellow_strip():
-    """ADA tactile warning strip: a 1 ft yellow slab down the east wall, truncated domes on a 2.35 in grid"""
-    c = coll("RenderStrip"); yel = mat_flat("ada_yellow", "#FFD000", 0.45); x0, x1, y0, y1 = X0, X0 + 1.0, 0.4, 66.4
+    """ADA tactile warning strip: a 1 ft yellow slab down the east wall from the glass to the extension's back wall, truncated domes on a 2.35 in grid"""
+    c = coll("RenderStrip"); yel = mat_flat("ada_yellow", "#FFD000", 0.45); x0, x1, y0, y1 = X0, X0 + 1.0, 0.4, EXT_D - 0.7
     box("STRIP_SLAB", x0, x1, y0, y1, 0.06, 0.09, yel, c)
     bm = bmesh.new(); pitch = 0.235; r = 0.062; h = 0.03; n = 0; y = y0 + 0.12
     while y < y1 - 0.1:
@@ -82,9 +82,8 @@ def yellow_strip():
     mesh_obj("STRIP_DOMES", bm, yel, c); return "yellow strip %d domes" % n
 def black_paint():
     c = coll("RenderBlack"); blk = mat_flat("paint_black", "#0c0c0c", 0.5)
-    box("BLACK_BACKWALL", X0, XR, DEPTH - 0.03, DEPTH, 0.06, CEIL, blk, c)                              # the wall behind the video wall, painted out
-    for i, (ya, yb) in enumerate(((13.0, 18.5), (23.0, 28.5))): box("BLACK_PLINTH_%d" % i, 4.7, 8.3, ya + 0.3, yb - 0.3, 0.06, 0.45, blk, c)      # black plinths under the tables, as at 115
-    return "black paint: back wall, plinths"
+    for i, (ya, yb) in enumerate(((8.0, 13.5), (17.0, 22.5))): box("BLACK_PLINTH_%d" % i, 4.9, 7.5, ya + 0.3, yb - 0.3, 0.06, 0.45, blk, c)      # black plinths under the tables, as at 115
+    return "black paint: plinths (the extension's back wall is already black in the model)"
 if bpy.app.background:
     bpy.ops.wm.open_mainfile(filepath=SRC)
     print(append_assets()); print(real_tees()); print(galaga()); print(yellow_strip()); print(black_paint())

@@ -12,13 +12,13 @@ HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.dirname(HERE); 
 RAW = os.path.join(OUT, "renders", "raw"); os.makedirs(RAW, exist_ok=True); SCR = os.path.join(HERE, "screens"); FT = 0.3048
 # shot: (kind, loc ft, target ft, lens, f-stop, focus ft along the view or None)
 SHOTS = {
- "H51_hero_1_long":    ("in", (4.6, 1.2, 4.9),  (8.0, 66.0, 4.9), 24, 4.0, 34.0),
- "H51_hero_2_rail":    ("in", (3.4, 11.0, 4.9), (10.4, 19.5, 4.5), 24, 2.0, 7.5),
- "H51_hero_3_prints":  ("in", (8.8, 5.0, 5.4),  (1.5, 21.0, 5.2),  24, 3.2, 17.0),
- "H51_hero_4_wall":    ("in", (8.6, 45.0, 5.2), (9.5, 67.0, 5.0),  24, 4.0, 22.0),
- "H51_hero_5_reverse": ("in", (7.8, 62.0, 5.3), (6.6, 1.5, 5.0),   24, 4.0, 40.0),
- "H51_hero_6_galaga":  ("in", (9.0, 50.5, 4.8), (3.8, 64.5, 3.7),  24, 2.2, 15.0),
- "H51_hero_7_tables":  ("in", (5.4, 20.0, 3.4), (7.2, 56.0, 5.6),  24, 2.8, 12.0),
+ "H51_hero_1_long":    ("in", (4.6, 1.2, 4.9),  (6.0, 80.0, 5.0), 24, 4.0, 40.0),
+ "H51_hero_2_rail":    ("in", (2.9, 9.0, 4.9),  (10.4, 17.0, 4.5), 24, 2.0, 7.5),
+ "H51_hero_3_prints":  ("in", (8.0, 5.0, 5.4),  (1.5, 21.0, 5.2),  24, 3.2, 17.0),
+ "H51_hero_4_wall":    ("in", (7.0, 70.8, 5.2), (7.0, 80.1, 5.0),  24, 4.0, 9.5),
+ "H51_hero_5_reverse": ("in", (3.0, 77.0, 5.3), (6.0, 1.5, 5.0),   24, 4.0, 40.0),
+ "H51_hero_6_galaga":  ("in", (13.5, 70.4, 4.9), (22.4, 77.8, 3.8), 24, 2.2, 12.0),
+ "H51_hero_7_tables":  ("in", (5.0, 5.0, 3.4),  (6.5, 40.0, 5.2),  24, 2.8, 10.0),
  "H51_hero_8_street":  ("out", None, None, 35, 8.0, None),
  "H51_doll_found":     ("doll", None, None, 35, 0, None),
  "H51_doll_white":     ("doll", None, None, 35, 0, None),
@@ -95,10 +95,10 @@ def assign(prefixes, mat):
     for o in bpy.data.objects:
         if o.type == 'MESH' and o.name.startswith(prefixes): o.data.materials.clear(); o.data.materials.append(mat)
 def realism():
-    assign(("IN_WALLE", "IN_WALLW", "IN_HALLWALL"), painted_brick("real_wall_x", "#E9E6DF", 0.62, 0.55, "x")); assign(("IN_WALLB", "IN_BATHBACK", "IN_HALLEND"), painted_brick("real_wall_y", "#E9E6DF", 0.62, 0.55, "y"))
+    assign(("IN_WALLE", "IN_WALLW1", "IN_WALLW2", "IN_WALLW3", "IN_HALLWALL", "IN_PARTITION", "IN_WALLX_W", "IN_BATH_E"), painted_brick("real_wall_x", "#E9E6DF", 0.62, 0.55, "x")); assign(("IN_WALLB", "IN_WALLX_B", "IN_WALLW_JOG", "IN_HALLEND", "IN_BATH_FRONT", "IN_BATH_BACK", "IN_BATH_HEAD"), painted_brick("real_wall_y", "#E9E6DF", 0.62, 0.55, "y"))
     assign(("IN_CEIL",), plain("real_ceil", "#F0EEE9", 0.8)); assign(("IN_FLOOR",), concrete("real_floor", "#C9C6BE"))
     assign(("FIT_UNIT_PLANK", "FIT_TBL_TOP"), oak("real_oak"))
-    assign(("FIT_UNIT_UP", "FIT_UNIT_ARM", "FIT_UNIT_BRK", "FIT_UNIT_RAIL", "FIT_TBL_LEG", "FIT_GAL_FR", "FIT_MON_FR", "FIT_HANG", "IN_TRACK", "IN_HEAD", "IN_BATHDOOR", "BLACK_"), plain("real_black", "#0b0b0c", 0.4))
+    assign(("FIT_UNIT_UP", "FIT_UNIT_ARM", "FIT_UNIT_BRK", "FIT_UNIT_RAIL", "FIT_TBL_LEG", "FIT_GAL_FR", "FIT_MON_FR", "FIT_HANG", "IN_TRACK", "IN_HEAD", "IN_BATHDOOR", "IN_RAD", "BLACK_"), plain("real_black", "#0b0b0c", 0.4))
     tints = {"cream": "#EFE2C6", "navy": "#34496A", "lilac": "#E6CBEA", "moss": "#52635F", "peach": "#F4A887", "black": "#161616", "white": "#F1EFE9"}
     for o in bpy.data.objects:
         if o.type == 'MESH' and o.name.startswith("FIT_FOLD") and o.data.materials:
@@ -111,6 +111,13 @@ def realism():
             p = os.path.join(SCR, o.name + ".jpg"); o.data.materials.clear()
             if o.name == "MON_SCR_W2": p = os.path.join(OUT, "assets", "art", "nyf_monitor_screen.png")
             if os.path.exists(p): o.data.materials.append(emissive("scr_" + o.name, p, 1.6 if o.name[8] == "B" else 1.3))
+    sm, sn, sl = fresh("ada_dots"); so = sn.new('ShaderNodeOutputMaterial'); sb = sn.new('ShaderNodeBsdfPrincipled'); tc = sn.new('ShaderNodeTexCoord'); mp = sn.new('ShaderNodeMapping'); vo = sn.new('ShaderNodeTexVoronoi'); bmp = sn.new('ShaderNodeBump'); mr = sn.new('ShaderNodeMapRange')
+    mp.inputs['Scale'].default_value = (1, 1, 0); vo.inputs['Scale'].default_value = 14.0; mr.inputs['From Min'].default_value = 0.0; mr.inputs['From Max'].default_value = 0.42; mr.inputs['To Min'].default_value = 1.0; mr.inputs['To Max'].default_value = 0.0
+    sl.new(tc.outputs['Object'], mp.inputs['Vector']); sl.new(mp.outputs[0], vo.inputs['Vector']); sl.new(vo.outputs['Distance'], mr.inputs['Value']); sl.new(mr.outputs[0], bmp.inputs['Height']); bmp.inputs['Strength'].default_value = 0.8; bmp.inputs['Distance'].default_value = 0.004
+    sl.new(bmp.outputs[0], sb.inputs['Normal']); sb.inputs['Base Color'].default_value = srgb("#F9D000"); sb.inputs['Roughness'].default_value = 0.5; sl.new(sb.outputs[0], so.inputs[0])
+    for o in bpy.data.objects:
+        if o.name == "STRIP_SLAB": o.data.materials.clear(); o.data.materials.append(sm)
+        if o.name == "STRIP_DOMES": o.hide_render = True
     m = bpy.data.materials.get("ada_yellow")
     if m: b = P(m); b.inputs['Roughness'].default_value = 0.5; b.inputs['Base Color'].default_value = srgb("#F9D400")
     m = bpy.data.materials.get("PJ_SHOPGLASS")
@@ -139,13 +146,14 @@ def rig_interior(dusk=False):
     heads = sorted([o for o in bpy.data.objects if o.name.startswith("IN_HEAD_")], key=lambda o: o.name)
     for i, h in enumerate(heads):
         local = root().matrix_world.inverted() @ h.matrix_world.translation; xf, yf = local.x / FT, local.y / FT
-        tgt = W(1.5, yf, 5.3) if xf < 6.5 else W(10.5, yf, 3.9)
+        tgt = W(1.5, yf, 5.3) if xf < 6.0 else W(10.4, yf, 3.9)
         add_light("head%02d" % i, 'SPOT', W(xf, yf, 11.0), tgt, 320, (1.0, 0.87, 0.70), 0.05, 26, 0.6)
     for k in range(4): add_light("floorspot%d" % k, 'SPOT', W(6.5, 9.0 + k * 10.0, 11.2), W(6.5, 9.0 + k * 10.0, 0.0), 60, (1.0, 0.9, 0.78), 0.1, 55, 0.7)
-    add_light("window", 'AREA', W(6.5, -0.8, 5.2), W(6.5, 20.0, 3.5), 700, (0.86, 0.92, 1.0), (7 * FT, 8 * FT))
+    add_light("window", 'AREA', W(6.5, -0.8, 5.2), W(6.5, 14.0, 3.5), 700, (0.86, 0.92, 1.0), (7 * FT, 8 * FT))
     add_light("cove", 'AREA', W(6.5, 20.0, 11.3), W(6.5, 20.0, 0.0), 170, (1.0, 0.92, 0.82), (6 * FT, 40 * FT))
-    for k, xx in enumerate((5.0, 9.5, 14.0)): add_light("rear%d" % k, 'SPOT', W(xx, 57.0, 11.1), W(xx, 62.5, 0.0), 220, (1.0, 0.9, 0.78), 0.08, 50, 0.6)
-    add_light("rear_fill", 'AREA', W(9.5, 56.0, 11.3), W(9.5, 56.0, 0.0), 170, (1.0, 0.92, 0.82), (14 * FT, 10 * FT))
+    for k, xx in enumerate((5.0, 12.0, 19.0)): add_light("ext%d" % k, 'SPOT', W(xx, 74.0, 8.9), W(xx, 74.0, 0.0), 320, (1.0, 0.92, 0.82), 0.08, 70, 0.6)
+    add_light("ext_fill", 'AREA', W(13.0, 74.0, 8.9), W(13.0, 74.0, 0.0), 260, (1.0, 0.92, 0.82), (20 * FT, 8 * FT))
+    add_light("bath_passage", 'AREA', W(3.3, 56.0, 9.3), W(3.3, 56.0, 0.0), 90, (1.0, 0.92, 0.82), (2.5 * FT, 14 * FT))
 def set_visibility(kind, ex, fit):
     for o in bpy.data.objects:
         n = o.name
@@ -170,21 +178,28 @@ def cam(name, loc, target, lens, fstop=0, focus_ft=None, ortho=None, rot=None):
     if d.dof.use_dof: d.dof.aperture_fstop = fstop; d.dof.focus_distance = focus_ft * FT
     return c
 def render(shot, w, h, samples):
-    kind, loc, tgt, lens, fstop, focus = SHOTS[shot]; sc = bpy.context.scene; cycles(w, h, samples); sc.view_settings.exposure = -0.25
+    kind, loc, tgt, lens, fstop, focus = SHOTS[shot]; sc = bpy.context.scene; 
+    if kind == 'plan': w, h = 1500, 2000
+    cycles(w, h, samples); sc.view_settings.exposure = -0.5
     if kind == "in":
         set_visibility(kind, False, True); rig_interior(); c = cam(shot, W(*loc), W(*tgt), lens, fstop, focus)
     elif kind == "out":
-        set_visibility(kind, False, True); rig_interior(dusk=True); sc.view_settings.exposure = 0.3; c = cam(shot, W(-9.0, -58.0, 5.6), W(6.5, 0.0, 6.2), lens, fstop, 60.0)
+        set_visibility(kind, False, True); rig_interior(dusk=True); sc.view_settings.exposure = -0.3
+        for o in bpy.data.objects:
+            if o.name == 'TREES': o.hide_render = True
+            if o.name == 'RIG_window': o.hide_viewport = True
+        bpy.data.objects['RIG_window'].data.energy = 0
+        c = cam(shot, W(-9.0, -58.0, 5.6), W(6.5, 0.0, 6.2), lens, fstop, 60.0)
     elif kind == "doll":
         set_visibility(kind, shot.endswith("found"), shot.endswith("built")); clear_lights(); world('flat')
         if shot.endswith("white"):
             for o in bpy.data.objects:
                 if o.name.startswith("IN_WALLW"): o.hide_render = True
         add_light("sun", 'SUN', (0, 0, 100), None, 3.2, (1, 0.97, 0.92)); bpy.data.objects["RIG_sun"].rotation_euler = (math.radians(48), math.radians(8), math.radians(-35)); bpy.data.lights["sun"].angle = math.radians(2.0)
-        c = cam(shot, W(34, -24, 62), W(7, 31, 3), lens)
+        c = cam(shot, W(38, -28, 70), W(9, 42, 3), lens)
     else:
         set_visibility(kind, False, True); clear_lights(); world('flat'); add_light("sun", 'SUN', (0, 0, 100), None, 3.2, (1, 0.97, 0.92)); bpy.data.objects["RIG_sun"].rotation_euler = (math.radians(30), 0, math.radians(-20)); bpy.data.lights["sun"].angle = math.radians(3.0)
-        iv = root().matrix_world.to_3x3() @ Vector((0, 1, 0)); th = math.atan2(-iv.x, iv.y); c = cam(shot, W(9.5, 34.0, 90.0), W(9.5, 34.0, 0.0), 0, ortho=84 * FT, rot=(0, 0, th))
+        iv = root().matrix_world.to_3x3() @ Vector((0, 1, 0)); th = math.atan2(-iv.x, iv.y); c = cam(shot, W(11.0, 41.0, 90.0), W(11.0, 41.0, 0.0), 0, ortho=90 * FT, rot=(0, 0, th))
     sc.camera = c; sc.render.filepath = os.path.join(RAW, shot + ".png"); bpy.ops.render.render(write_still=True); return "rendered " + shot
 if bpy.app.background:
     bpy.ops.wm.open_mainfile(filepath=BLEND); realism()

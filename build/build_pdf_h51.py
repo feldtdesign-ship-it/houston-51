@@ -11,6 +11,8 @@ head_css = DECK[DECK.index('<link href='):DECK.index('</style>') + 8]
 head_css = head_css.replace('--film:"https://feldtdesign-ship-it.github.io/pj-115-avenue-a/";', '')
 for n in os.listdir(os.path.join(OUT, 'renders')):
     if n.endswith('.jpg'): shutil.copy(os.path.join(OUT, 'renders', n), os.path.join(IMG, n))
+for n in os.listdir(IMG):
+    if n.startswith('H51_') and n.endswith('.jpg'): subprocess.run(['sips', '-Z', '1920', '-s', 'format', 'jpeg', '-s', 'formatOptions', '86', os.path.join(IMG, n), '--out', os.path.join(IMG, n)], capture_output=True)
 shutil.copy(os.path.join(os.path.dirname(OUT), 'avea-115-interior', 'deck', 'img', 'PJ_sig_crop.svg'), os.path.join(IMG, 'PJ_sig_crop.svg'))
 T = json.load(open(os.path.join(OUT, 'data', 'atr_summary.json')))
 foot = lambda n: '<div class="foot"><span>PJ O\'Rourke II / 51 East Houston Street</span><span>%02d</span></div>' % n
@@ -20,7 +22,7 @@ S.append('''<section class="slide dark">
   <div style="position:absolute;left:0;right:0;top:0;height:760px;background:linear-gradient(180deg,rgba(12,12,12,.55) 0,rgba(12,12,12,0) 22%)"></div>
   <div class="label" style="position:absolute;left:80px;top:60px;color:#f6f5f2">Proposal · 51 East Houston Street · Nolita · October 2026</div>
   <div style="position:absolute;left:80px;right:80px;top:782px;display:flex;justify-content:space-between;align-items:flex-end">
-    <div class="h-xl" style="font-size:104px">PJ O'Rourke II<br><span style="color:var(--yellow)">at 51 East Houston</span></div>
+    <div class="h-xl" style="font-size:84px">PJ O'Rourke II<br><span style="color:var(--yellow)">at 51 East Houston</span></div>
     <img class="sig" src="img/PJ_sig_crop.svg" style="width:300px;margin-bottom:-6px" alt="PJ O'Rourke signature">
   </div>
   <div class="strip bottom"></div>
@@ -30,8 +32,8 @@ S.append('''<section class="slide light">
     <div class="label dim">01 · The proposal</div>
     <div class="h-cond" style="font-size:132px;margin-top:34px">A long room.<br>Painted white.<br>Then the work.</div>
     <div class="rule" style="margin:48px 0 40px;width:120px;background:var(--yellow);opacity:1;height:8px"></div>
-    <p class="quote" style="font-size:44px">1,400 square feet of ground-floor retail between Mulberry and Mott, 68 feet deep. A white box today. A gallery you walk down, with a screen at the end of every sightline.</p>
-    <p class="label dim" style="margin-top:28px">Listed by Meridian Retail Leasing</p>
+    <p class="quote" style="font-size:44px">A shop 68 feet deep and 10 feet wide between Mulberry and Mott, with a storage room behind it. A white box today. A gallery you walk down, with a screen at the end of the sightline.</p>
+    <p class="label dim" style="margin-top:28px">Listed by Meridian Retail Leasing at 1,400 sq ft</p>
   </div>
   <img src="img/H51_hero_7_tables.jpg" style="position:absolute;right:0;top:0;width:960px;height:1080px;object-fit:cover;object-position:62% 50%" alt="">
   <div class="tag" style="position:absolute;right:40px;bottom:60px">Concept image</div>
@@ -73,7 +75,7 @@ S.append('''<section class="slide dark">
   <div class="label" style="position:absolute;left:80px;top:70px">05 · The screens</div>
   <div style="position:absolute;left:80px;right:80px;bottom:120px;display:flex;justify-content:space-between;align-items:flex-end;gap:60px">
     <div class="h-cond" style="font-size:170px">15 screens.<br>All PJ.</div>
-    <div style="max-width:760px"><div class="tag">Video wall</div><p class="body" style="margin-top:16px;font-size:30px;font-weight:600">Six panels at the back that show one picture, then six, then prints. Three more hang on poles down the corridor, and three face East Houston from the window.</p></div>
+    <div style="max-width:760px"><div class="tag">Video wall</div><p class="body" style="margin-top:16px;font-size:30px;font-weight:600">Six panels on the black back wall of the storage room, seen down the whole corridor through the doorway. They show one picture, then six, then prints. Three more hang on poles, and three face East Houston from the window.</p></div>
   </div>
   <div class="strip bottom"></div>
 </section>''')
@@ -82,8 +84,8 @@ S.append('''<section class="slide light">
   <div style="position:absolute;left:1240px;top:80px;right:80px">
     <div class="label dim">06 · The details</div>
     <div class="h-cond" style="font-size:132px;margin-top:30px">The platform edge, indoors.</div>
-    <p class="body" style="margin-top:34px">The yellow tactile strip is the edge of every subway platform, where PJ started. Here it runs the length of the east wall: 66 feet, glass to back wall.</p>
-    <p class="body" style="margin-top:20px">Black paint on the back wall, the track, the pipe and the frames. White everywhere else. The work does the colour.</p>
+    <p class="body" style="margin-top:34px">The yellow tactile strip is the edge of every subway platform, where PJ started. Here it runs the length of the east wall: 79 feet, from the glass through the doorway to the back wall.</p>
+    <p class="body" style="margin-top:20px">Black paint on the storage room's back wall, the track, the pipe and the frames. White everywhere else. The work does the colour.</p>
   </div>
   <div class="strip v" style="left:1180px"></div>
 </section>''')
@@ -92,21 +94,21 @@ S.append('''<section class="slide dark">
   <div style="position:absolute;left:660px;top:80px;right:80px">
     <div class="label dim">07 · Measured, not guessed</div>
     <div class="h-xl" style="font-size:92px;margin-top:30px">We already know this room.</div>
-    <p class="body" style="margin-top:28px;color:#d8d5ce;max-width:1050px">Every rendering is built from a to-scale 3D model, drawn from Meridian's plan and a walk-through video of the space. Dimensions are read off those and are approximate.</p>
-    <table style="margin-top:36px;width:100%;border-collapse:collapse;font-size:28px">
-      <tr style="border-top:2px solid #3a3936"><td style="padding:15px 0" class="cap">Ground floor</td><td style="text-align:right;font-weight:800">1,400 sq ft per the listing</td></tr>
-      <tr style="border-top:2px solid #3a3936"><td style="padding:15px 0" class="cap">Corridor</td><td style="text-align:right;font-weight:800">about 10 ft wide, 40 ft to the bath</td></tr>
-      <tr style="border-top:2px solid #3a3936"><td style="padding:15px 0" class="cap">Rear room</td><td style="text-align:right;font-weight:800">about 17 ft wide</td></tr>
-      <tr style="border-top:2px solid #3a3936"><td style="padding:15px 0" class="cap">Glass to back wall</td><td style="text-align:right;font-weight:800">67 ft 7 in</td></tr>
-      <tr style="border-top:2px solid #3a3936"><td style="padding:15px 0" class="cap">Ceiling</td><td style="text-align:right;font-weight:800">about 11 to 12 ft, estimated</td></tr>
-      <tr style="border-top:2px solid #3a3936;border-bottom:2px solid #3a3936"><td style="padding:15px 0" class="cap">Building</td><td style="text-align:right;font-weight:800">1900 walk-up, 5 storeys, 24.6 ft lot</td></tr>
+    <p class="body" style="margin-top:28px;color:#d8d5ce;max-width:1050px">Every rendering is built from a to-scale 3D model, drawn from Meridian's plan and read against a walk-through video of the space. Dimensions are read off those and are approximate.</p>
+    <table style="margin-top:36px;width:100%;border-collapse:collapse;font-size:27px">
+      <tr style="border-top:2px solid #3a3936"><td style="padding:13px 0" class="cap">Front zone</td><td style="text-align:right;font-weight:800">9 ft 11 in wide, 26 ft from the glass</td></tr>
+      <tr style="border-top:2px solid #3a3936"><td style="padding:13px 0" class="cap">Back zone</td><td style="text-align:right;font-weight:800">8 ft 10 in wide, to 67 ft 7 in</td></tr>
+      <tr style="border-top:2px solid #3a3936"><td style="padding:13px 0" class="cap">Bath</td><td style="text-align:right;font-weight:800">8 ft 8 in x 5 ft 3 in, west wall</td></tr>
+      <tr style="border-top:2px solid #3a3936"><td style="padding:13px 0" class="cap">Passage past the bath</td><td style="text-align:right;font-weight:800">about 3 ft 6 in wide</td></tr>
+      <tr style="border-top:2px solid #3a3936"><td style="padding:13px 0" class="cap">Storage room behind</td><td style="text-align:right;font-weight:800">12 ft 6 in x 24 ft 6 in</td></tr>
+      <tr style="border-top:2px solid #3a3936;border-bottom:2px solid #3a3936"><td style="padding:13px 0" class="cap">Building</td><td style="text-align:right;font-weight:800">1900 walk-up, 5 storeys, 24.6 ft lot</td></tr>
     </table>
-    <p class="cap" style="margin-top:22px;color:#a9a69e">Not drawn: the storage extension beyond the back wall. The city lists 705 sq ft of retail on record; this deck uses Meridian's 1,400.</p>
+    <p class="cap" style="margin-top:22px;color:#a9a69e">The plan is an architect's drawing of proposed work, so the video wins where they differ. Ceiling about 11 ft at the front, lower at the back, estimated. Not drawn: Milano's and the building's entrance hall. Meridian lists 1,400 sq ft; the city lists 705 sq ft of retail on record.</p>
   </div>
   <div class="strip bottom"></div>
 </section>''')
 S.append('''<section class="slide light">
-  <img src="img/H51_hero_8_street.jpg" style="position:absolute;left:0;top:0;width:1920px;height:600px;object-fit:cover;object-position:50% 60%" alt="">
+  <img src="img/H51_hero_7_tables.jpg" style="position:absolute;left:0;top:0;width:1920px;height:600px;object-fit:cover;object-position:50% 45%" alt="">
   <div class="label" style="position:absolute;left:80px;top:48px;color:#f6f5f2">08 · The corner</div>
   <div style="position:absolute;left:80px;right:80px;top:650px;display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:56px;align-items:start">
     <div class="h-cond" style="font-size:104px">Crossroads of Nolita, NoHo and the LES.</div>

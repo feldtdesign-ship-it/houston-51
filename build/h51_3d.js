@@ -16,11 +16,11 @@ const WP=[
  {p:[330,470,330],t:[0,8,0],s:250,o:0,st:st(0,0,1,0,0,0,0,0,1)},                                              // s0 the block
  {p:R(2,-82,30),t:R(6.5,0,14),s:11,o:-.40,st:st(0,0,1,0,0,0,0,0,1)},                                         // s1 the building, from over East Houston
  {p:[SITE[0]+150,330,SITE[2]+210],t:[SITE[0]-40,0,SITE[2]-10],s:175,o:-.42,st:st(0,0,1,0,0,0,0,1,1)},       // s2 the corner, pins
- {p:R(34,-24,62),t:R(7,31,3),s:12,o:.40,st:st(0,1,1,0,0,1,0,0,0)},                                           // s3 as found, from the west, near wall off
- {p:R(34,-24,62),t:R(7,31,3),s:11.4,o:-.38,st:st(1,1,0,0,0,1,0,0,0)},                                        // s4 the white box
- {p:R(38,10,42),t:R(3,33,5),s:10.5,o:.36,st:st(1,1,0,1,0,1,0,0,0)},                                           // s5 the walls (east wall, prints)
- {p:R(-24,10,42),t:R(11,33,5),s:10.5,o:-.36,st:st(1,1,0,1,1,0,0,0,0)},                                        // s6 the rail (west wall, tees)
- {p:R(7,6,30),t:R(9,56,5),s:5.6,o:.34,st:st(0,1,0,1,0,0,1,0,0)},                                         // s7 the screens, lights down, along the corridor
+ {p:R(38,-26,66),t:R(8,40,3),s:17,o:.40,st:st(0,1,1,0,0,1,0,0,0)},                                           // s3 as found, from the west, near wall off
+ {p:R(38,-26,66),t:R(8,40,3),s:16.2,o:-.38,st:st(1,1,0,0,0,1,0,0,0)},                                        // s4 the white box
+ {p:R(40,8,42),t:R(3,22,5),s:10.5,o:.36,st:st(1,1,0,1,0,1,0,0,0)},                                           // s5 the walls (east wall, prints)
+ {p:R(-24,12,42),t:R(11,16,5),s:10.5,o:-.36,st:st(1,1,0,1,1,0,0,0,0)},                                        // s6 the rail (west wall, tees)
+ {p:R(6,-6,30),t:R(8,62,5),s:10.5,o:.36,st:st(0,1,0,1,0,0,1,0,0)},                                         // s7 the screens, lights down, along the corridor
  {p:R(-34,-74,9),t:R(6.5,0,6),s:7.5,o:-.40,st:st(0,0,0,1,0,0,1,0,1)}];                                       // s8 the street, the window
 let renderer,scene,cam,ready=false;
 function fail(m){console.warn('3D unavailable:',m);document.body.classList.add('fallback');loadEl.classList.add('done');}
@@ -59,7 +59,7 @@ if(renderer){
    }
    else if(N.startsWith('MON_SCR_')){groups.screens[n]=o; groups.fit.push(o);}
    else if(N.startsWith('EX_')){o.userData.y0=o.position.y;groups.ex.push(o);o.receiveShadow=true;if(m){m.transparent=true;groups.exMats.add(m);const c0=m.color.clone();m.emissive=c0.clone();m.emissiveIntensity=.38;}
-     if(/^EX_(TILEWALL_E|TILEHEX_E|ROSETTE)/.test(N)) near('E'); else if(/^EX_(TILEWALL_W|TILEHEX_W|STEEL|TIMBER)/.test(N)) near('W');}
+     if(/^EX_(TILEWALL_E|ROSETTE|STEEL|TIMBER)/.test(N)) near('E'); else if(/^EX_(TILEWALL_W|TILEHEX_W|JAMB)/.test(N)) near('W');}
    else if(N.startsWith('FIT_')){groups.fit.push(o);o.castShadow=true;if(m){m.transparent=true;groups.fitMats.add(m);
        if(N==='FIT_STRIP'){m.emissive=col(0xF6C500);m.emissiveIntensity=.55;}
        if(N.startsWith('FIT_GAL_PRINT')){m.emissive=col(0xFFFFFF);m.emissiveIntensity=.35;m.emissiveMap=m.map||null;}
@@ -68,8 +68,8 @@ if(renderer){
        else if(N.startsWith('FIT_GAL_MAT')){m.emissive=m.color.clone();m.emissiveIntensity=.5;}}
      if(/^FIT_GAL_/.test(N)) near('E'); else if(/^FIT_(UNIT_|TEE_)/.test(N)||(/^FIT_FOLD_\d/.test(N))) near('W');}
    else if(N.startsWith('IN_')){o.receiveShadow=true;o.castShadow=true;if(m){if(/^IN_FLOOR/.test(N)) m.color.set(0xEAE7E1); const w=/^IN_(WALL|CEIL|BATH|HALL)/.test(N);m.userData.w=w;groups.inMats.add(m);m.emissive=m.color.clone();m.emissiveIntensity=w?.5:.4;}
-     if(/^IN_(WALLE)/.test(N)) near('E'); else if(/^IN_WALLW1/.test(N)) near('W');
-     if(/^IN_(CEIL|TRACK|HEAD)/.test(N)) groups.ceil.push(o);}
+     if(/^IN_WALLE/.test(N)) near('E'); else if(/^IN_(WALLW|AC)/.test(N)) near('W');
+     if(/^IN_(CEIL|TRACK|HEAD|CAN)/.test(N)) groups.ceil.push(o);}
    else if(N.startsWith('TREES')){o.castShadow=true;if(m)pal(m,0x4A5A3A,0xC9D3BC,.2,.3);groups.trees.push(o);}
    else if(N.startsWith('GROUND')||N.startsWith('PLANE')){o.receiveShadow=true;if(m)pal(m,0x141210,0xECE9E3,0,.9);}
    else if(N.startsWith('ROADBED')){o.receiveShadow=true;if(m)pal(m,0x1C1A18,0xE3E0D9,0,.7);}
